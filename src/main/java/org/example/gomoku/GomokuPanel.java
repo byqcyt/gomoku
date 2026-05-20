@@ -41,7 +41,7 @@ public class GomokuPanel extends JPanel {
                 if (gameBoard.placeStone(row, col)) {
                     repaint();
                     updateStatus();
-                    if (gameMode == GameMode.PVE && !gameBoard.isGameOver()) {
+                    if (gameMode.isPVE() && !gameBoard.isGameOver()) {
                         triggerAIMove();
                     }
                 }
@@ -51,8 +51,11 @@ public class GomokuPanel extends JPanel {
 
     public void setGameMode(GameMode mode) {
         this.gameMode = mode;
-        if (mode == GameMode.PVE && ai == null) {
-            ai = new GomokuAI(3);
+        if (mode.isPVE()) {
+            boolean random = (mode == GameMode.PVE_EASY);
+            ai = new GomokuAI(mode.getAiDepth(), mode.getCandidateRange(), random);
+        } else {
+            ai = null;
         }
     }
 

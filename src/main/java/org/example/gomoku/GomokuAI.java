@@ -1,11 +1,13 @@
 package org.example.gomoku;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 
 /**
  * 五子棋AI - Minimax + Alpha-Beta剪枝
- * AI执白子（WHITE），深度默认3
+ * AI执白子（WHITE）
  */
 public class GomokuAI {
 
@@ -24,9 +26,18 @@ public class GomokuAI {
     private static final int SCORE_SLEEP_TWO = 50;
 
     private final int depth;
+    private final int candidateRange;
+    private final boolean randomPick;
+    private final Random random = new Random();
 
-    public GomokuAI(int depth) {
+    public GomokuAI(int depth, int candidateRange) {
+        this(depth, candidateRange, false);
+    }
+
+    public GomokuAI(int depth, int candidateRange, boolean randomPick) {
         this.depth = depth;
+        this.candidateRange = candidateRange;
+        this.randomPick = randomPick;
     }
 
     /**
@@ -40,19 +51,25 @@ public class GomokuAI {
             return new int[]{7, 7};
         }
 
-        int bestScore = Integer.MIN_VALUE;
-        int[] bestMove = candidates.get(0);
-
+        // 计算每个候选的分数
+        List<ScoredMove> scored = new ArrayList<>();
         for (int[] move : candidates) {
             local[move[0]][move[1]] = WHITE;
             int score = minimax(local, depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
             local[move[0]][move[1]] = EMPTY;
-            if (score > bestScore) {
-                bestScore = score;
-                bestMove = move;
-            }
+            scored.add(new ScoredMove(move, score));
         }
-        return bestMove;
+
+        // 按分数降序排列
+        scored.sort(Comparator.comparingInt((ScoredMove s) -> s.score).reversed());
+
+        if (randomPick && scored.size() > 1) {
+            // 普通模式：在top3中随机选
+            int top = Math.min(3, scored.size());
+            return scored.get(random.nextInt(top)).move;
+        }
+
+        return scored.get(0).move;
     }
 
     private int minimax(int[][] board, int depth, int alpha, int beta, boolean maximizing) {
@@ -90,7 +107,7 @@ public class GomokuAI {
     }
 
     /**
-     * 候选落子：已有棋子周围2格范围内的空位
+     * 候选落子：已有棋子周围 candidateRange 格范围内的空位
      */
     private List<int[]> getCandidates(int[][] board) {
         boolean[][] near = new boolean[SIZE][SIZE];
@@ -100,8 +117,8 @@ public class GomokuAI {
             for (int c = 0; c < SIZE; c++) {
                 if (board[r][c] != EMPTY) {
                     hasStones = true;
-                    for (int dr = -2; dr <= 2; dr++) {
-                        for (int dc = -2; dc <= 2; dc++) {
+                    for (int dr = -candidateRange; dr <= candidateRange; dr++) {
+                        for (int dc = -candidateRange; dc <= candidateRange; dc++) {
                             int nr = r + dr, nc = c + dc;
                             if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc] == EMPTY) {
                                 near[nr][nc] = true;
@@ -199,7 +216,6 @@ public class GomokuAI {
                 count++;
                 j++;
             }
-            // 前端开放
             int openEnds = 0;
             if (i > 0 && line[i - 1] == EMPTY) openEnds++;
             if (j < line.length && line[j] == EMPTY) openEnds++;
@@ -228,5 +244,14 @@ public class GomokuAI {
             copy[i] = java.util.Arrays.copyOf(board[i], SIZE);
         }
         return copy;
+    }
+
+    private static class ScoredMove {
+        final int[] move;
+        final int score;
+        ScoredMove(int[] move, int score) {
+            this.move = move;
+            this.score = score;
+        }
     }
 }

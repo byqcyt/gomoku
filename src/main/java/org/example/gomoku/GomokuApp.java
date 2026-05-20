@@ -22,10 +22,11 @@ public class GomokuApp {
 
             GomokuPanel panel = new GomokuPanel(gameBoard, statusBar);
 
-            JComboBox<String> modeBox = new JComboBox<>(new String[]{"人人对战", "人机对战"});
+            GameMode[] modes = {GameMode.PVP, GameMode.PVE_HARD, GameMode.PVE_MEDIUM, GameMode.PVE_EASY};
+            JComboBox<String> modeBox = new JComboBox<>(new String[]{"人人对战", "高级人机", "中级人机", "普通人机"});
             modeBox.setFont(new Font("微软雅黑", Font.PLAIN, 14));
             modeBox.addActionListener(e -> {
-                panel.setGameMode(modeBox.getSelectedIndex() == 0 ? GameMode.PVP : GameMode.PVE);
+                panel.setGameMode(modes[modeBox.getSelectedIndex()]);
                 gameBoard.reset();
                 panel.resetAI();
                 panel.repaint();
