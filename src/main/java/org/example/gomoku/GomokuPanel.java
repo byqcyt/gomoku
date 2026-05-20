@@ -53,7 +53,7 @@ public class GomokuPanel extends JPanel {
         this.gameMode = mode;
         if (mode.isPVE()) {
             boolean random = (mode == GameMode.PVE_EASY);
-            ai = new GomokuAI(mode.getAiDepth(), mode.getCandidateRange(), random);
+            ai = new GomokuAI(mode.getAiDepth(), mode.getCandidateRange(), mode.getMaxCandidates(), random);
         } else {
             ai = null;
         }

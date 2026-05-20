@@ -27,16 +27,14 @@ public class GomokuAI {
 
     private final int depth;
     private final int candidateRange;
+    private final int maxCandidates;
     private final boolean randomPick;
     private final Random random = new Random();
 
-    public GomokuAI(int depth, int candidateRange) {
-        this(depth, candidateRange, false);
-    }
-
-    public GomokuAI(int depth, int candidateRange, boolean randomPick) {
+    public GomokuAI(int depth, int candidateRange, int maxCandidates, boolean randomPick) {
         this.depth = depth;
         this.candidateRange = candidateRange;
+        this.maxCandidates = maxCandidates;
         this.randomPick = randomPick;
     }
 
@@ -51,20 +49,23 @@ public class GomokuAI {
             return new int[]{7, 7};
         }
 
-        // 计算每个候选的分数
+        // 先用快速启发式排序，截取topN减少搜索量
+        if (maxCandidates > 0 && candidates.size() > maxCandidates) {
+            candidates = selectTopCandidates(local, candidates, maxCandidates);
+        }
+
+        // 计算每个候选的深度搜索分数
         List<ScoredMove> scored = new ArrayList<>();
         for (int[] move : candidates) {
             local[move[0]][move[1]] = WHITE;
-            int score = minimax(local, depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+            int score = minimax(local, depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, false, 15);
             local[move[0]][move[1]] = EMPTY;
             scored.add(new ScoredMove(move, score));
         }
 
-        // 按分数降序排列
         scored.sort(Comparator.comparingInt((ScoredMove s) -> s.score).reversed());
 
         if (randomPick && scored.size() > 1) {
-            // 普通模式：在top3中随机选
             int top = Math.min(3, scored.size());
             return scored.get(random.nextInt(top)).move;
         }
@@ -72,7 +73,85 @@ public class GomokuAI {
         return scored.get(0).move;
     }
 
-    private int minimax(int[][] board, int depth, int alpha, int beta, boolean maximizing) {
+    /**
+     * 用快速启发式评估每个候选位置，选出topN
+     */
+    private List<int[]> selectTopCandidates(int[][] board, List<int[]> candidates, int topN) {
+        List<ScoredMove> scored = new ArrayList<>();
+        for (int[] move : candidates) {
+            board[move[0]][move[1]] = WHITE;
+            int score = quickScore(board, move[0], move[1]);
+            board[move[0]][move[1]] = EMPTY;
+            scored.add(new ScoredMove(move, score));
+        }
+        // 也检查对手的威胁
+        for (int[] move : candidates) {
+            if (board[move[0]][move[1]] != EMPTY) continue;
+            board[move[0]][move[1]] = BLACK;
+            int threat = quickScore(board, move[0], move[1]);
+            board[move[0]][move[1]] = EMPTY;
+            // 找到对应的scored项并加上威胁分
+            for (ScoredMove sm : scored) {
+                if (sm.move[0] == move[0] && sm.move[1] == move[1]) {
+                    sm.defenseScore = threat;
+                    break;
+                }
+            }
+        }
+        scored.sort(Comparator.comparingInt((ScoredMove s) -> -(s.score + s.defenseScore)));
+        List<int[]> result = new ArrayList<>();
+        for (int i = 0; i < Math.min(topN, scored.size()); i++) {
+            result.add(scored.get(i).move);
+        }
+        return result;
+    }
+
+    /**
+     * 快速评估：只检查落子位置周围的4条线
+     */
+    private int quickScore(int[][] board, int row, int col) {
+        int score = 0;
+        int[][] dirs = {{0, 1}, {1, 0}, {1, 1}, {1, -1}};
+        for (int[] dir : dirs) {
+            int count = countLine(board, row, col, dir[0], dir[1]);
+            int open = countOpenEnds(board, row, col, dir[0], dir[1]);
+            score += patternScore(count, open);
+        }
+        return score;
+    }
+
+    private int countLine(int[][] board, int row, int col, int dr, int dc) {
+        int player = board[row][col];
+        int count = 1;
+        for (int i = 1; i < 5; i++) {
+            int r = row + dr * i, c = col + dc * i;
+            if (r >= 0 && r < SIZE && c >= 0 && c < SIZE && board[r][c] == player) count++;
+            else break;
+        }
+        for (int i = 1; i < 5; i++) {
+            int r = row - dr * i, c = col - dc * i;
+            if (r >= 0 && r < SIZE && c >= 0 && c < SIZE && board[r][c] == player) count++;
+            else break;
+        }
+        return count;
+    }
+
+    private int countOpenEnds(int[][] board, int row, int col, int dr, int dc) {
+        int open = 0;
+        int r = row + dr, c = col + dc;
+        while (r >= 0 && r < SIZE && c >= 0 && c < SIZE && board[r][c] == board[row][col]) {
+            r += dr; c += dc;
+        }
+        if (r >= 0 && r < SIZE && c >= 0 && c < SIZE && board[r][c] == EMPTY) open++;
+        r = row - dr; c = col - dc;
+        while (r >= 0 && r < SIZE && c >= 0 && c < SIZE && board[r][c] == board[row][col]) {
+            r -= dr; c -= dc;
+        }
+        if (r >= 0 && r < SIZE && c >= 0 && c < SIZE && board[r][c] == EMPTY) open++;
+        return open;
+    }
+
+    private int minimax(int[][] board, int depth, int alpha, int beta, boolean maximizing, int limit) {
         if (depth == 0) {
             return evaluateBoard(board);
         }
@@ -80,12 +159,16 @@ public class GomokuAI {
         if (candidates.isEmpty()) {
             return evaluateBoard(board);
         }
+        // 内层搜索也限制候选数量
+        if (candidates.size() > limit) {
+            candidates = selectTopCandidates(board, candidates, limit);
+        }
 
         if (maximizing) {
             int maxEval = Integer.MIN_VALUE;
             for (int[] move : candidates) {
                 board[move[0]][move[1]] = WHITE;
-                int eval = minimax(board, depth - 1, alpha, beta, false);
+                int eval = minimax(board, depth - 1, alpha, beta, false, limit);
                 board[move[0]][move[1]] = EMPTY;
                 maxEval = Math.max(maxEval, eval);
                 alpha = Math.max(alpha, eval);
@@ -96,7 +179,7 @@ public class GomokuAI {
             int minEval = Integer.MAX_VALUE;
             for (int[] move : candidates) {
                 board[move[0]][move[1]] = BLACK;
-                int eval = minimax(board, depth - 1, alpha, beta, true);
+                int eval = minimax(board, depth - 1, alpha, beta, true, limit);
                 board[move[0]][move[1]] = EMPTY;
                 minEval = Math.min(minEval, eval);
                 beta = Math.min(beta, eval);
@@ -146,12 +229,10 @@ public class GomokuAI {
 
     /**
      * 评估函数：扫描所有行、列、对角线，按棋型评分
-     * 从AI（WHITE）视角：AI得分 - 人类得分
      */
     private int evaluateBoard(int[][] board) {
         int aiScore = 0, humanScore = 0;
 
-        // 扫描所有行
         for (int r = 0; r < SIZE; r++) {
             int[] line = new int[SIZE];
             for (int c = 0; c < SIZE; c++) line[c] = board[r][c];
@@ -159,7 +240,6 @@ public class GomokuAI {
             aiScore += scores[0];
             humanScore += scores[1];
         }
-        // 扫描所有列
         for (int c = 0; c < SIZE; c++) {
             int[] line = new int[SIZE];
             for (int r = 0; r < SIZE; r++) line[r] = board[r][c];
@@ -167,7 +247,6 @@ public class GomokuAI {
             aiScore += scores[0];
             humanScore += scores[1];
         }
-        // 扫描对角线（从左上到右下）
         for (int start = -SIZE + 1; start < SIZE; start++) {
             List<Integer> lineList = new ArrayList<>();
             for (int r = 0; r < SIZE; r++) {
@@ -181,7 +260,6 @@ public class GomokuAI {
                 humanScore += scores[1];
             }
         }
-        // 扫描对角线（从右上到左下）
         for (int start = 0; start < 2 * SIZE - 1; start++) {
             List<Integer> lineList = new ArrayList<>();
             for (int r = 0; r < SIZE; r++) {
@@ -198,9 +276,6 @@ public class GomokuAI {
         return aiScore - humanScore;
     }
 
-    /**
-     * 评估单条线：返回 {aiScore, humanScore}
-     */
     private int[] scoreLine(int[] line) {
         int aiScore = 0, humanScore = 0;
         int i = 0;
@@ -249,6 +324,7 @@ public class GomokuAI {
     private static class ScoredMove {
         final int[] move;
         final int score;
+        int defenseScore;
         ScoredMove(int[] move, int score) {
             this.move = move;
             this.score = score;
