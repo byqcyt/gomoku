@@ -15,6 +15,7 @@ public class GameBoard {
     private boolean gameOver;
     private int winner;
     private int[][] winLine;
+    private final java.util.Deque<int[]> moveHistory = new java.util.ArrayDeque<>();
 
     public GameBoard() {
         board = new int[SIZE][SIZE];
@@ -29,6 +30,7 @@ public class GameBoard {
         gameOver = false;
         winner = EMPTY;
         winLine = null;
+        moveHistory.clear();
     }
 
     /**
@@ -43,6 +45,7 @@ public class GameBoard {
             return false;
         }
         board[row][col] = currentPlayer;
+        moveHistory.push(new int[]{row, col, currentPlayer});
 
         // 检查是否获胜
         if (checkWin(row, col)) {
@@ -124,5 +127,24 @@ public class GameBoard {
             copy[i] = java.util.Arrays.copyOf(board[i], SIZE);
         }
         return copy;
+    }
+
+    /**
+     * 悔一步棋
+     * @return true 如果悔棋成功
+     */
+    public boolean undoLastMove() {
+        if (moveHistory.isEmpty()) return false;
+        int[] last = moveHistory.pop();
+        board[last[0]][last[1]] = EMPTY;
+        currentPlayer = last[2];
+        gameOver = false;
+        winner = EMPTY;
+        winLine = null;
+        return true;
+    }
+
+    public int getMoveCount() {
+        return moveHistory.size();
     }
 }

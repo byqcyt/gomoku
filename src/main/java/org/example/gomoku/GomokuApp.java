@@ -44,6 +44,12 @@ public class GomokuApp {
 
             JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
             rightPanel.add(modeBox);
+
+            JButton undoBtn = new JButton("悔棋");
+            undoBtn.setFont(new Font("微软雅黑", Font.PLAIN, 14));
+            undoBtn.addActionListener(e -> panel.undo());
+            rightPanel.add(undoBtn);
+
             rightPanel.add(resetBtn);
 
             JPanel bottomPanel = new JPanel(new BorderLayout());

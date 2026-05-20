@@ -63,6 +63,19 @@ public class GomokuPanel extends JPanel {
         aiThinking = false;
     }
 
+    public void undo() {
+        if (aiThinking) return;
+        if (gameMode.isPVE()) {
+            // PVE模式：撤销AI一步 + 人类一步
+            gameBoard.undoLastMove();
+            gameBoard.undoLastMove();
+        } else {
+            gameBoard.undoLastMove();
+        }
+        repaint();
+        updateStatus();
+    }
+
     private void triggerAIMove() {
         aiThinking = true;
         statusBar.setText("AI正在思考...");
