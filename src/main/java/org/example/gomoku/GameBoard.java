@@ -114,4 +114,15 @@ public class GameBoard {
     public int[][] getWinLine() {
         return winLine;
     }
+
+    /**
+     * 返回棋盘深拷贝，供AI线程安全使用
+     */
+    public int[][] getBoardCopy() {
+        int[][] copy = new int[SIZE][SIZE];
+        for (int i = 0; i < SIZE; i++) {
+            copy[i] = java.util.Arrays.copyOf(board[i], SIZE);
+        }
+        return copy;
+    }
 }

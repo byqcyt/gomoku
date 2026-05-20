@@ -22,17 +22,32 @@ public class GomokuApp {
 
             GomokuPanel panel = new GomokuPanel(gameBoard, statusBar);
 
-            JButton resetBtn = new JButton("重新开始");
-            resetBtn.setFont(new Font("微软雅黑", Font.PLAIN, 14));
-            resetBtn.addActionListener(e -> {
+            JComboBox<String> modeBox = new JComboBox<>(new String[]{"人人对战", "人机对战"});
+            modeBox.setFont(new Font("微软雅黑", Font.PLAIN, 14));
+            modeBox.addActionListener(e -> {
+                panel.setGameMode(modeBox.getSelectedIndex() == 0 ? GameMode.PVP : GameMode.PVE);
                 gameBoard.reset();
+                panel.resetAI();
                 panel.repaint();
                 statusBar.setText("当前回合：黑子，请点击棋盘落子");
             });
 
+            JButton resetBtn = new JButton("重新开始");
+            resetBtn.setFont(new Font("微软雅黑", Font.PLAIN, 14));
+            resetBtn.addActionListener(e -> {
+                gameBoard.reset();
+                panel.resetAI();
+                panel.repaint();
+                statusBar.setText("当前回合：黑子，请点击棋盘落子");
+            });
+
+            JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            rightPanel.add(modeBox);
+            rightPanel.add(resetBtn);
+
             JPanel bottomPanel = new JPanel(new BorderLayout());
             bottomPanel.add(statusBar, BorderLayout.CENTER);
-            bottomPanel.add(resetBtn, BorderLayout.EAST);
+            bottomPanel.add(rightPanel, BorderLayout.EAST);
 
             frame.add(panel, BorderLayout.CENTER);
             frame.add(bottomPanel, BorderLayout.SOUTH);

@@ -18,6 +18,9 @@ public class GomokuPanel extends JPanel {
 
     private final GameBoard gameBoard;
     private final JLabel statusBar;
+    private GameMode gameMode = GameMode.PVP;
+    private GomokuAI ai;
+    private volatile boolean aiThinking;
 
     public GomokuPanel(GameBoard gameBoard, JLabel statusBar) {
         this.gameBoard = gameBoard;
@@ -29,7 +32,7 @@ public class GomokuPanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (gameBoard.isGameOver()) {
+                if (gameBoard.isGameOver() || aiThinking) {
                     return;
                 }
                 int col = Math.round((float) (e.getX() - PADDING) / CELL_SIZE);
@@ -38,9 +41,52 @@ public class GomokuPanel extends JPanel {
                 if (gameBoard.placeStone(row, col)) {
                     repaint();
                     updateStatus();
+                    if (gameMode == GameMode.PVE && !gameBoard.isGameOver()) {
+                        triggerAIMove();
+                    }
                 }
             }
         });
+    }
+
+    public void setGameMode(GameMode mode) {
+        this.gameMode = mode;
+        if (mode == GameMode.PVE && ai == null) {
+            ai = new GomokuAI(3);
+        }
+    }
+
+    public void resetAI() {
+        aiThinking = false;
+    }
+
+    private void triggerAIMove() {
+        aiThinking = true;
+        statusBar.setText("AI正在思考...");
+
+        int[][] snapshot = gameBoard.getBoardCopy();
+        new SwingWorker<int[], Void>() {
+            @Override
+            protected int[] doInBackground() {
+                return ai.findBestMove(snapshot);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    int[] move = get();
+                    if (move != null && !gameBoard.isGameOver()) {
+                        gameBoard.placeStone(move[0], move[1]);
+                        repaint();
+                        updateStatus();
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                } finally {
+                    aiThinking = false;
+                }
+            }
+        }.execute();
     }
 
     private void updateStatus() {
