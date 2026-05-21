@@ -337,10 +337,12 @@ GameMain.prototype.paintStatus = function() {
 GameMain.prototype.paintBtns = function() {
   var ctx = this.ctx
   var d = this.dpr
+  var r = 8 * d
   for (var i = 0; i < this.btns.length; i++) {
     var b = this.btns[i]
+    var bx = b.x * d, by = b.y * d, bw = b.w * d, bh = b.h * d
 
-    // 背景色
+    // 背景
     if (b.act === 'mode') {
       ctx.fillStyle = (b.idx === this.modeIdx) ? '#E67E22' : '#FFF'
     } else if (b.act === 'undo') {
@@ -352,12 +354,14 @@ GameMain.prototype.paintBtns = function() {
     } else {
       ctx.fillStyle = '#FFF'
     }
-    ctx.fillRect(b.x * d, b.y * d, b.w * d, b.h * d)
+    this.roundRect(ctx, bx, by, bw, bh, r)
+    ctx.fill()
 
     // 边框
     ctx.strokeStyle = '#CCC'
     ctx.lineWidth = d
-    ctx.strokeRect(b.x * d, b.y * d, b.w * d, b.h * d)
+    this.roundRect(ctx, bx, by, bw, bh, r)
+    ctx.stroke()
 
     // 文字颜色
     if (b.act === 'mode' && b.idx === this.modeIdx) {
