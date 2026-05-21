@@ -1,0 +1,21 @@
+<view class="container">
+  <view class="toolbar">
+    <picker mode="selector" range="{{modeNames}}" value="{{modeIndex}}" bindchange="onModeChange">
+      <view class="picker">{{modeNames[modeIndex]}}</view>
+    </picker>
+    <button class="btn" bindtap="onUndo" disabled="{{aiThinking}}">悔棋</button>
+    <button class="btn" bindtap="onReset">重新开始</button>
+  </view>
+
+  <canvas
+    id="boardCanvas"
+    type="2d"
+    class="board"
+    bindtouchstart="onTap"
+  ></canvas>
+
+  <view class="status">
+    <text>{{statusText}}</text>
+    <view wx:if="{{aiThinking}}" class="thinking">...</view>
+  </view>
+</view>
