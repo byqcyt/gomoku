@@ -9,258 +9,231 @@ var GomokuAI = ai.GomokuAI
 var gm = require('./game/GameMode.js')
 var GameMode = gm.GameMode
 
-var CELL_SIZE = 22
-var PADDING = 15
-var BOARD_SIZE = PADDING * 2 + CELL_SIZE * (SIZE - 1)
-var BTN_H = 36
-var BTN_GAP = 10
+var CELL = 22
+var PAD = 15
+var BOARD = PAD * 2 + CELL * (SIZE - 1)
 
-function GameMain(canvas, screenW, screenH, dpr) {
+function GameMain(canvas, screenW, screenH) {
   this.canvas = canvas
   this.ctx = canvas.getContext('2d')
-  this.screenW = screenW
-  this.screenH = screenH
-  this.dpr = dpr
-  this.gameBoard = new GameBoard()
+  this.w = screenW
+  this.h = screenH
+  this.board = new GameBoard()
   this.mode = GameMode.PVE_MEDIUM
-  this.modeIndex = 2
-  this.aiThinking = false
-  this.statusText = '当前回合：黑子'
-  this.buttons = []
+  this.modeIdx = 2
+  this.thinking = false
+  this.status = '当前回合：黑子'
+  this.btns = []
 }
 
 GameMain.prototype.start = function() {
-  this.layout()
-  this.draw()
-  this.bindTouch()
+  this.initLayout()
+  this.paint()
+  this.listen()
 }
 
-GameMain.prototype.layout = function() {
-  var boardX = Math.floor((this.screenW - BOARD_SIZE) / 2)
-  var boardY = 20
-  this.boardX = boardX
-  this.boardY = boardY
+GameMain.prototype.initLayout = function() {
+  var bx = Math.floor((this.w - BOARD) / 2)
+  var by = 15
+  this.bx = bx
+  this.by = by
 
-  var modeNames = ['人人', '高级', '中级', '普通']
-  var modeW = 56
-  var modeStartX = Math.floor((this.screenW - (modeW * 4 + BTN_GAP * 3)) / 2)
-  var modeY = boardY + BOARD_SIZE + 16
+  var names = ['人人', '高级', '中级', '普通']
+  var bw = 54
+  var gap = 8
+  var mx = Math.floor((this.w - (bw * 4 + gap * 3)) / 2)
+  var my = by + BOARD + 12
 
-  this.buttons = []
-  for (var i = 0; i < modeNames.length; i++) {
-    this.buttons.push({
-      x: modeStartX + i * (modeW + BTN_GAP),
-      y: modeY,
-      w: modeW,
-      h: BTN_H,
-      label: modeNames[i],
-      action: 'mode',
-      index: i
-    })
+  this.btns = []
+  for (var i = 0; i < 4; i++) {
+    this.btns.push({ x: mx + i * (bw + gap), y: my, w: bw, h: 32, text: names[i], act: 'mode', idx: i })
   }
 
-  var actionY = modeY + BTN_H + 12
-  var actionW = 80
-  var actionStartX = Math.floor((this.screenW - (actionW * 2 + BTN_GAP)) / 2)
-  this.buttons.push({ x: actionStartX, y: actionY, w: actionW, h: BTN_H, label: '悔棋', action: 'undo' })
-  this.buttons.push({ x: actionStartX + actionW + BTN_GAP, y: actionY, w: actionW, h: BTN_H, label: '重新开始', action: 'reset' })
+  var ay = my + 40
+  var aw = 76
+  var ax = Math.floor((this.w - (aw * 2 + gap)) / 2)
+  this.btns.push({ x: ax, y: ay, w: aw, h: 32, text: '悔棋', act: 'undo' })
+  this.btns.push({ x: ax + aw + gap, y: ay, w: aw, h: 32, text: '重新开始', act: 'reset' })
 
-  this.statusY = actionY + BTN_H + 16
+  this.statusY = ay + 44
 }
 
-GameMain.prototype.draw = function() {
+GameMain.prototype.paint = function() {
   var ctx = this.ctx
   ctx.fillStyle = '#F5F5F5'
-  ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
-
-  this.drawBoard()
-  this.drawStatus()
-  this.drawButtons()
+  ctx.fillRect(0, 0, this.w, this.h)
+  this.paintBoard()
+  this.paintStatus()
+  this.paintBtns()
 }
 
-GameMain.prototype.drawBoard = function() {
+GameMain.prototype.paintBoard = function() {
   var ctx = this.ctx
-  var dpr = this.dpr
-  var x = this.boardX * dpr
-  var y = this.boardY * dpr
-  var bSize = BOARD_SIZE * dpr
-  var pad = PADDING * dpr
-  var cell = CELL_SIZE * dpr
+  var ox = this.bx
+  var oy = this.by
 
   ctx.fillStyle = '#DEB887'
-  ctx.fillRect(x, y, bSize, bSize)
+  ctx.fillRect(ox, oy, BOARD, BOARD)
 
   ctx.strokeStyle = '#333'
-  ctx.lineWidth = dpr
+  ctx.lineWidth = 1
   for (var i = 0; i < SIZE; i++) {
-    var pos = pad + i * cell
-    ctx.beginPath(); ctx.moveTo(x + pad, y + pos); ctx.lineTo(x + bSize - pad, y + pos); ctx.stroke()
-    ctx.beginPath(); ctx.moveTo(x + pos, y + pad); ctx.lineTo(x + pos, y + bSize - pad); ctx.stroke()
+    var p = PAD + i * CELL
+    ctx.beginPath()
+    ctx.moveTo(ox + PAD, oy + p)
+    ctx.lineTo(ox + PAD + (SIZE - 1) * CELL, oy + p)
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.moveTo(ox + p, oy + PAD)
+    ctx.lineTo(ox + p, oy + PAD + (SIZE - 1) * CELL)
+    ctx.stroke()
   }
 
   var stars = [[3,3],[3,11],[7,7],[11,3],[11,11]]
   ctx.fillStyle = '#333'
-  for (var s = 0; s < stars.length; s++) {
+  for (var s = 0; s < 5; s++) {
     var r = stars[s][0], c = stars[s][1]
     ctx.beginPath()
-    ctx.arc(x + c * cell, y + r * cell, 3 * dpr, 0, Math.PI * 2)
+    ctx.arc(ox + PAD + c * CELL, oy + PAD + r * CELL, 3, 0, 6.3)
     ctx.fill()
   }
 
-  var radius = cell * 0.42
+  var rad = CELL * 0.42
   for (var r = 0; r < SIZE; r++) {
     for (var c = 0; c < SIZE; c++) {
-      var cellVal = this.gameBoard.getCell(r, c)
-      if (cellVal === EMPTY) continue
-      var cx = x + c * cell
-      var cy = y + r * cell
+      var v = this.board.getCell(r, c)
+      if (v === EMPTY) continue
+      var cx = ox + PAD + c * CELL
+      var cy = oy + PAD + r * CELL
       ctx.beginPath()
-      ctx.arc(cx, cy, radius, 0, Math.PI * 2)
-      ctx.fillStyle = cellVal === BLACK ? '#000' : '#FFF'
+      ctx.arc(cx, cy, rad, 0, 6.3)
+      ctx.fillStyle = v === BLACK ? '#000' : '#FFF'
       ctx.fill()
-      ctx.strokeStyle = '#333'
-      ctx.lineWidth = dpr
+      ctx.strokeStyle = '#555'
+      ctx.lineWidth = 1
       ctx.stroke()
     }
   }
 
-  if (this.gameBoard.winLine) {
-    var wl = this.gameBoard.winLine
+  if (this.board.winLine) {
+    var wl = this.board.winLine
     ctx.strokeStyle = 'red'
-    ctx.lineWidth = 3 * dpr
+    ctx.lineWidth = 3
     ctx.beginPath()
-    ctx.moveTo(x + wl.sc * cell, y + wl.sr * cell)
-    ctx.lineTo(x + wl.ec * cell, y + wl.er * cell)
+    ctx.moveTo(ox + PAD + wl.sc * CELL, oy + PAD + wl.sr * CELL)
+    ctx.lineTo(ox + PAD + wl.ec * CELL, oy + PAD + wl.er * CELL)
     ctx.stroke()
   }
 }
 
-GameMain.prototype.drawStatus = function() {
+GameMain.prototype.paintStatus = function() {
   var ctx = this.ctx
-  var dpr = this.dpr
   ctx.fillStyle = '#333'
-  ctx.font = (14 * dpr) + 'px sans-serif'
+  ctx.font = '14px sans-serif'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  var thinking = this.aiThinking ? '  (AI思考中...)' : ''
-  ctx.fillText(this.statusText + thinking, (this.screenW / 2) * dpr, this.statusY * dpr)
+  var t = this.thinking ? this.status + ' (AI思考中...)' : this.status
+  ctx.fillText(t, this.w / 2, this.statusY)
 }
 
-GameMain.prototype.drawButtons = function() {
+GameMain.prototype.paintBtns = function() {
   var ctx = this.ctx
-  var dpr = this.dpr
-  for (var i = 0; i < this.buttons.length; i++) {
-    var b = this.buttons[i]
-    if (b.action === 'mode' && b.index === this.modeIndex) {
-      ctx.fillStyle = '#DEB887'
-    } else {
-      ctx.fillStyle = '#FFFFFF'
-    }
-    ctx.fillRect(b.x * dpr, b.y * dpr, b.w * dpr, b.h * dpr)
+  for (var i = 0; i < this.btns.length; i++) {
+    var b = this.btns[i]
+    ctx.fillStyle = (b.act === 'mode' && b.idx === this.modeIdx) ? '#DEB887' : '#FFF'
+    ctx.fillRect(b.x, b.y, b.w, b.h)
     ctx.strokeStyle = '#CCC'
-    ctx.lineWidth = dpr
-    ctx.strokeRect(b.x * dpr, b.y * dpr, b.w * dpr, b.h * dpr)
+    ctx.lineWidth = 1
+    ctx.strokeRect(b.x, b.y, b.w, b.h)
     ctx.fillStyle = '#333'
-    ctx.font = (13 * dpr) + 'px sans-serif'
+    ctx.font = '13px sans-serif'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText(b.label, (b.x + b.w / 2) * dpr, (b.y + b.h / 2) * dpr)
+    ctx.fillText(b.text, b.x + b.w / 2, b.y + b.h / 2)
   }
 }
 
-GameMain.prototype.bindTouch = function() {
+GameMain.prototype.listen = function() {
   var self = this
   wx.onTouchStart(function(e) {
-    if (self.aiThinking) return
-    var touch = e.touches[0]
-    var tx = touch.clientX
-    var ty = touch.clientY
+    if (self.thinking) return
+    var tx = e.touches[0].clientX
+    var ty = e.touches[0].clientY
 
-    for (var i = 0; i < self.buttons.length; i++) {
-      var b = self.buttons[i]
-      if (tx >= b.x && tx <= b.x + b.w && ty >= b.y && ty <= b.y + b.h) {
-        self.onButton(b)
+    for (var i = 0; i < self.btns.length; i++) {
+      var b = self.btns[i]
+      if (tx >= b.x && tx < b.x + b.w && ty >= b.y && ty < b.y + b.h) {
+        self.clickBtn(b)
         return
       }
     }
 
-    if (self.gameBoard.gameOver) return
+    if (self.board.gameOver) return
 
-    var col = Math.floor((tx - self.boardX - PADDING + CELL_SIZE / 2) / CELL_SIZE)
-    var row = Math.floor((ty - self.boardY - PADDING + CELL_SIZE / 2) / CELL_SIZE)
-    if (row < 0 || row >= SIZE || col < 0 || col >= SIZE) return
+    var dx = tx - self.bx - PAD
+    var dy = ty - self.by - PAD
+    var col = Math.round(dx / CELL)
+    var row = Math.round(dy / CELL)
+    if (col < 0 || col >= SIZE || row < 0 || row >= SIZE) return
 
-    if (self.gameBoard.placeStone(row, col)) {
+    if (self.board.placeStone(row, col)) {
       self.updateStatus()
-      self.draw()
-      if (!self.gameBoard.gameOver && self.mode !== GameMode.PVP) {
+      self.paint()
+      if (!self.board.gameOver && self.mode !== GameMode.PVP) {
         self.doAI()
       }
     }
   })
 }
 
-GameMain.prototype.onButton = function(b) {
-  if (b.action === 'mode') {
-    var modes = [GameMode.PVP, GameMode.PVE_HARD, GameMode.PVE_MEDIUM, GameMode.PVE_EASY]
-    this.mode = modes[b.index]
-    this.modeIndex = b.index
+GameMain.prototype.clickBtn = function(b) {
+  if (b.act === 'mode') {
+    var ms = [GameMode.PVP, GameMode.PVE_HARD, GameMode.PVE_MEDIUM, GameMode.PVE_EASY]
+    this.mode = ms[b.idx]
+    this.modeIdx = b.idx
     this.resetGame()
-  } else if (b.action === 'undo') {
-    this.onUndo()
-  } else if (b.action === 'reset') {
+  } else if (b.act === 'undo') {
+    if (this.thinking) return
+    if (this.mode !== GameMode.PVP) { this.board.undoLastMove(); this.board.undoLastMove() }
+    else { this.board.undoLastMove() }
+    this.updateStatus()
+    this.paint()
+  } else if (b.act === 'reset') {
     this.resetGame()
   }
-}
-
-GameMain.prototype.onUndo = function() {
-  if (this.aiThinking) return
-  if (this.mode !== GameMode.PVP) {
-    this.gameBoard.undoLastMove()
-    this.gameBoard.undoLastMove()
-  } else {
-    this.gameBoard.undoLastMove()
-  }
-  this.updateStatus()
-  this.draw()
 }
 
 GameMain.prototype.resetGame = function() {
-  this.gameBoard.reset()
-  this.aiThinking = false
+  this.board.reset()
+  this.thinking = false
   this.updateStatus()
-  this.draw()
+  this.paint()
 }
 
 GameMain.prototype.doAI = function() {
   var self = this
-  self.aiThinking = true
-  self.draw()
-  var snapshot = self.gameBoard.getBoardCopy()
-  var gomokuAI = new GomokuAI(
-    self.mode.depth,
-    self.mode.range,
-    self.mode.maxCandidates,
-    self.mode.randomPick
-  )
+  self.thinking = true
+  self.paint()
+  var snap = self.board.getBoardCopy()
+  var gai = new GomokuAI(self.mode.depth, self.mode.range, self.mode.maxCandidates, self.mode.randomPick)
   setTimeout(function() {
-    var move = gomokuAI.findBestMove(snapshot)
-    if (move && !self.gameBoard.gameOver) {
-      self.gameBoard.placeStone(move.row, move.col)
+    var mv = gai.findBestMove(snap)
+    if (mv && !self.board.gameOver) {
+      self.board.placeStone(mv.row, mv.col)
       self.updateStatus()
     }
-    self.aiThinking = false
-    self.draw()
+    self.thinking = false
+    self.paint()
   }, 100)
 }
 
 GameMain.prototype.updateStatus = function() {
-  if (this.gameBoard.gameOver) {
-    var winner = this.gameBoard.winner === BLACK ? '黑子' : '白子'
-    this.statusText = '游戏结束！' + winner + '获胜！'
+  if (this.board.gameOver) {
+    var w = this.board.winner === BLACK ? '黑子' : '白子'
+    this.status = '游戏结束！' + w + '获胜！'
   } else {
-    var player = this.gameBoard.currentPlayer === BLACK ? '黑子' : '白子'
-    this.statusText = '当前回合：' + player
+    var p = this.board.currentPlayer === BLACK ? '黑子' : '白子'
+    this.status = '当前回合：' + p
   }
 }
 
