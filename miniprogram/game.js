@@ -1,13 +1,13 @@
-import { GameMain } from './gameMain.js'
+var GameMain = require('./gameMain.js').GameMain
 
-const info = wx.getSystemInfoSync()
-const dpr = info.pixelRatio
-const screenW = info.windowWidth
-const screenH = info.windowHeight
+var info = wx.getSystemInfoSync()
+var dpr = info.pixelRatio
+var screenW = info.windowWidth
+var screenH = info.windowHeight
 
-const canvas = wx.createCanvas()
+var canvas = wx.createCanvas()
 canvas.width = screenW * dpr
 canvas.height = screenH * dpr
 
-const main = new GameMain(canvas, screenW, screenH, dpr)
+var main = new GameMain(canvas, screenW, screenH, dpr)
 main.start()
