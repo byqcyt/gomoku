@@ -21,7 +21,6 @@ function GameMain(canvas, screenW, screenH, dpr) {
   this.screenW = screenW
   this.screenH = screenH
   this.dpr = dpr
-  this.ctx.scale(dpr, dpr)
   this.gameBoard = new GameBoard()
   this.mode = GameMode.PVE_MEDIUM
   this.modeIndex = 2
@@ -72,7 +71,7 @@ GameMain.prototype.layout = function() {
 GameMain.prototype.draw = function() {
   var ctx = this.ctx
   ctx.fillStyle = '#F5F5F5'
-  ctx.fillRect(0, 0, this.screenW, this.screenH)
+  ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
   this.drawBoard()
   this.drawStatus()
@@ -81,18 +80,22 @@ GameMain.prototype.draw = function() {
 
 GameMain.prototype.drawBoard = function() {
   var ctx = this.ctx
-  var x = this.boardX
-  var y = this.boardY
+  var dpr = this.dpr
+  var x = this.boardX * dpr
+  var y = this.boardY * dpr
+  var bSize = BOARD_SIZE * dpr
+  var pad = PADDING * dpr
+  var cell = CELL_SIZE * dpr
 
   ctx.fillStyle = '#DEB887'
-  ctx.fillRect(x, y, BOARD_SIZE, BOARD_SIZE)
+  ctx.fillRect(x, y, bSize, bSize)
 
   ctx.strokeStyle = '#333'
-  ctx.lineWidth = 1
+  ctx.lineWidth = dpr
   for (var i = 0; i < SIZE; i++) {
-    var pos = PADDING + i * CELL_SIZE
-    ctx.beginPath(); ctx.moveTo(x + PADDING, y + pos); ctx.lineTo(x + BOARD_SIZE - PADDING, y + pos); ctx.stroke()
-    ctx.beginPath(); ctx.moveTo(x + pos, y + PADDING); ctx.lineTo(x + pos, y + BOARD_SIZE - PADDING); ctx.stroke()
+    var pos = pad + i * cell
+    ctx.beginPath(); ctx.moveTo(x + pad, y + pos); ctx.lineTo(x + bSize - pad, y + pos); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(x + pos, y + pad); ctx.lineTo(x + pos, y + bSize - pad); ctx.stroke()
   }
 
   var stars = [[3,3],[3,11],[7,7],[11,3],[11,11]]
@@ -100,23 +103,23 @@ GameMain.prototype.drawBoard = function() {
   for (var s = 0; s < stars.length; s++) {
     var r = stars[s][0], c = stars[s][1]
     ctx.beginPath()
-    ctx.arc(x + c * CELL_SIZE, y + r * CELL_SIZE, 3, 0, Math.PI * 2)
+    ctx.arc(x + c * cell, y + r * cell, 3 * dpr, 0, Math.PI * 2)
     ctx.fill()
   }
 
-  var radius = CELL_SIZE * 0.42
+  var radius = cell * 0.42
   for (var r = 0; r < SIZE; r++) {
     for (var c = 0; c < SIZE; c++) {
-      var cell = this.gameBoard.getCell(r, c)
-      if (cell === EMPTY) continue
-      var cx = x + c * CELL_SIZE
-      var cy = y + r * CELL_SIZE
+      var cellVal = this.gameBoard.getCell(r, c)
+      if (cellVal === EMPTY) continue
+      var cx = x + c * cell
+      var cy = y + r * cell
       ctx.beginPath()
       ctx.arc(cx, cy, radius, 0, Math.PI * 2)
-      ctx.fillStyle = cell === BLACK ? '#000' : '#FFF'
+      ctx.fillStyle = cellVal === BLACK ? '#000' : '#FFF'
       ctx.fill()
       ctx.strokeStyle = '#333'
-      ctx.lineWidth = 1
+      ctx.lineWidth = dpr
       ctx.stroke()
     }
   }
@@ -124,26 +127,28 @@ GameMain.prototype.drawBoard = function() {
   if (this.gameBoard.winLine) {
     var wl = this.gameBoard.winLine
     ctx.strokeStyle = 'red'
-    ctx.lineWidth = 3
+    ctx.lineWidth = 3 * dpr
     ctx.beginPath()
-    ctx.moveTo(x + wl.sc * CELL_SIZE, y + wl.sr * CELL_SIZE)
-    ctx.lineTo(x + wl.ec * CELL_SIZE, y + wl.er * CELL_SIZE)
+    ctx.moveTo(x + wl.sc * cell, y + wl.sr * cell)
+    ctx.lineTo(x + wl.ec * cell, y + wl.er * cell)
     ctx.stroke()
   }
 }
 
 GameMain.prototype.drawStatus = function() {
   var ctx = this.ctx
+  var dpr = this.dpr
   ctx.fillStyle = '#333'
-  ctx.font = '14px sans-serif'
+  ctx.font = (14 * dpr) + 'px sans-serif'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   var thinking = this.aiThinking ? '  (AI思考中...)' : ''
-  ctx.fillText(this.statusText + thinking, this.screenW / 2, this.statusY)
+  ctx.fillText(this.statusText + thinking, (this.screenW / 2) * dpr, this.statusY * dpr)
 }
 
 GameMain.prototype.drawButtons = function() {
   var ctx = this.ctx
+  var dpr = this.dpr
   for (var i = 0; i < this.buttons.length; i++) {
     var b = this.buttons[i]
     if (b.action === 'mode' && b.index === this.modeIndex) {
@@ -151,15 +156,15 @@ GameMain.prototype.drawButtons = function() {
     } else {
       ctx.fillStyle = '#FFFFFF'
     }
-    ctx.fillRect(b.x, b.y, b.w, b.h)
+    ctx.fillRect(b.x * dpr, b.y * dpr, b.w * dpr, b.h * dpr)
     ctx.strokeStyle = '#CCC'
-    ctx.lineWidth = 1
-    ctx.strokeRect(b.x, b.y, b.w, b.h)
+    ctx.lineWidth = dpr
+    ctx.strokeRect(b.x * dpr, b.y * dpr, b.w * dpr, b.h * dpr)
     ctx.fillStyle = '#333'
-    ctx.font = '13px sans-serif'
+    ctx.font = (13 * dpr) + 'px sans-serif'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText(b.label, b.x + b.w / 2, b.y + b.h / 2)
+    ctx.fillText(b.label, (b.x + b.w / 2) * dpr, (b.y + b.h / 2) * dpr)
   }
 }
 

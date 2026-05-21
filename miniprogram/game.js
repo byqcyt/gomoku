@@ -5,7 +5,7 @@ var dpr = info.pixelRatio
 var screenW = info.windowWidth
 var screenH = info.windowHeight
 
-var canvas = wx.createCanvas({ type: '2d' })
+var canvas = wx.createCanvas()
 canvas.width = screenW * dpr
 canvas.height = screenH * dpr
 
