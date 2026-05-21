@@ -181,8 +181,8 @@ GameMain.prototype.bindTouch = function() {
 
     if (self.gameBoard.gameOver) return
 
-    var col = Math.round((tx - self.boardX - PADDING) / CELL_SIZE)
-    var row = Math.round((ty - self.boardY - PADDING) / CELL_SIZE)
+    var col = Math.floor((tx - self.boardX - PADDING + CELL_SIZE / 2) / CELL_SIZE)
+    var row = Math.floor((ty - self.boardY - PADDING + CELL_SIZE / 2) / CELL_SIZE)
     if (row < 0 || row >= SIZE || col < 0 || col >= SIZE) return
 
     if (self.gameBoard.placeStone(row, col)) {
