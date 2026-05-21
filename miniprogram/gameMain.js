@@ -56,7 +56,7 @@ GameMain.prototype.saveGuideState = function() {
 }
 
 GameMain.prototype.initLayout = function() {
-  var totalH = BOARD + 12 + 32 + 8 + 32 + 40 + 28 + 36
+  var totalH = BOARD + 12 + 32 + 8 + 32 + 44
   var by = Math.floor((this.h - totalH) / 2)
   var bx = Math.floor((this.w - BOARD) / 2)
   this.bx = bx
@@ -79,12 +79,9 @@ GameMain.prototype.initLayout = function() {
   this.btns.push({ x: ax, y: ay, w: aw, h: 32, text: '悔棋', act: 'undo' })
   this.btns.push({ x: ax + aw + gap, y: ay, w: aw, h: 32, text: '重新开始', act: 'reset' })
 
-  var hy = ay + 40
-  var hw = 76
-  var hx = Math.floor((this.w - hw) / 2)
-  this.btns.push({ x: hx, y: hy, w: hw, h: 28, text: '返回首页', act: 'home' })
+  this.btns.push({ x: 8, y: 6, w: 52, h: 26, text: '返回', act: 'home' })
 
-  this.statusY = hy + 36
+  this.statusY = ay + 44
 
   // 欢迎页按钮
   var btnW = 180
