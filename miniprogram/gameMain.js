@@ -62,9 +62,9 @@ GameMain.prototype.initLayout = function() {
   this.bx = bx
   this.by = by
 
-  var names = ['人人', '高级', '中级', '普通']
-  var bw = 54
-  var gap = 8
+  var names = ['人人对战', '高级人机', '中级人机', '普通人机']
+  var bw = 66
+  var gap = 6
   var mx = Math.floor((this.w - (bw * 4 + gap * 3)) / 2)
   var my = by + BOARD + 12
 
@@ -339,12 +339,34 @@ GameMain.prototype.paintBtns = function() {
   var d = this.dpr
   for (var i = 0; i < this.btns.length; i++) {
     var b = this.btns[i]
-    ctx.fillStyle = (b.act === 'mode' && b.idx === this.modeIdx) ? '#DEB887' : '#FFF'
+
+    // 背景色
+    if (b.act === 'mode') {
+      ctx.fillStyle = (b.idx === this.modeIdx) ? '#E67E22' : '#FFF'
+    } else if (b.act === 'undo') {
+      ctx.fillStyle = '#F39C12'
+    } else if (b.act === 'reset') {
+      ctx.fillStyle = '#E74C3C'
+    } else if (b.act === 'home') {
+      ctx.fillStyle = '#ECF0F1'
+    } else {
+      ctx.fillStyle = '#FFF'
+    }
     ctx.fillRect(b.x * d, b.y * d, b.w * d, b.h * d)
+
+    // 边框
     ctx.strokeStyle = '#CCC'
     ctx.lineWidth = d
     ctx.strokeRect(b.x * d, b.y * d, b.w * d, b.h * d)
-    ctx.fillStyle = '#333'
+
+    // 文字颜色
+    if (b.act === 'mode' && b.idx === this.modeIdx) {
+      ctx.fillStyle = '#FFF'
+    } else if (b.act === 'undo' || b.act === 'reset') {
+      ctx.fillStyle = '#FFF'
+    } else {
+      ctx.fillStyle = '#333'
+    }
     ctx.font = (13 * d) + 'px sans-serif'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
