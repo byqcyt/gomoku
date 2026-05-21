@@ -1,0 +1,8 @@
+{
+  "deviceOrientation": "portrait",
+  "showStatusBar": false,
+  "window": {
+    "navigationBarTitleText": "五子棋",
+    "navigationBarBackgroundColor": "#DEB887"
+  }
+}
