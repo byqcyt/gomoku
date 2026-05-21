@@ -1,6 +1,6 @@
-const { GameBoard, SIZE, EMPTY, BLACK, WHITE } = require('../../game/GameBoard')
-const { GameMode } = require('../../game/GameMode')
-const { GomokuAI } = require('../../game/GomokuAI')
+import { GameBoard, SIZE, EMPTY, BLACK, WHITE } from '../../game/GameBoard.js'
+import { GameMode } from '../../game/GameMode.js'
+import { GomokuAI } from '../../game/GomokuAI.js'
 
 const CELL_SIZE = 22
 const PADDING = 15

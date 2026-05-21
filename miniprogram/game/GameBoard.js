@@ -1,9 +1,9 @@
-const SIZE = 15
-const EMPTY = 0
-const BLACK = 1
-const WHITE = 2
+export const SIZE = 15
+export const EMPTY = 0
+export const BLACK = 1
+export const WHITE = 2
 
-class GameBoard {
+export class GameBoard {
   constructor() {
     this.board = []
     this.currentPlayer = BLACK
@@ -82,5 +82,3 @@ class GameBoard {
     return this.board.map(row => [...row])
   }
 }
-
-module.exports = { GameBoard, SIZE, EMPTY, BLACK, WHITE }

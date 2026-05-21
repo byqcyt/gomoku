@@ -1,4 +1,4 @@
-const { SIZE, EMPTY, BLACK, WHITE } = require('./GameBoard')
+import { SIZE, EMPTY, BLACK, WHITE } from './GameBoard.js'
 
 const SCORE_FIVE = 1000000
 const SCORE_LIVE_FOUR = 50000
@@ -8,7 +8,7 @@ const SCORE_SLEEP_THREE = 500
 const SCORE_LIVE_TWO = 500
 const SCORE_SLEEP_TWO = 50
 
-class GomokuAI {
+export class GomokuAI {
   constructor(depth, candidateRange, maxCandidates, randomPick) {
     this.depth = depth
     this.candidateRange = candidateRange
@@ -213,5 +213,3 @@ class GomokuAI {
     return 0
   }
 }
-
-module.exports = { GomokuAI }
