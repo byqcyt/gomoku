@@ -33,3 +33,10 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Android ###
+.gradle/
+local.properties
+**/build/
+*.apk
+*.aab
