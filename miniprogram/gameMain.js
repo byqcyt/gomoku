@@ -15,11 +15,13 @@ var BOARD_SIZE = PADDING * 2 + CELL_SIZE * (SIZE - 1)
 var BTN_H = 36
 var BTN_GAP = 10
 
-function GameMain(canvas, screenW, screenH) {
+function GameMain(canvas, screenW, screenH, dpr) {
   this.canvas = canvas
   this.ctx = canvas.getContext('2d')
   this.screenW = screenW
   this.screenH = screenH
+  this.dpr = dpr
+  this.ctx.scale(dpr, dpr)
   this.gameBoard = new GameBoard()
   this.mode = GameMode.PVE_MEDIUM
   this.modeIndex = 2
