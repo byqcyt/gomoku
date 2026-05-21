@@ -79,7 +79,7 @@ GameMain.prototype.initLayout = function() {
   this.btns.push({ x: ax, y: ay, w: aw, h: 32, text: '悔棋', act: 'undo' })
   this.btns.push({ x: ax + aw + gap, y: ay, w: aw, h: 32, text: '重新开始', act: 'reset' })
 
-  this.btns.push({ x: 8, y: 6, w: 32, h: 28, text: '←', act: 'home' })
+  this.btns.push({ x: 10, y: Math.max(this.by - 36, 8), w: 36, h: 30, text: '←', act: 'home' })
 
   this.statusY = ay + 44
 
