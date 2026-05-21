@@ -34,8 +34,9 @@ GameMain.prototype.start = function() {
 }
 
 GameMain.prototype.initLayout = function() {
+  var totalH = BOARD + 12 + 32 + 8 + 32 + 44
+  var by = Math.floor((this.h - totalH) / 2)
   var bx = Math.floor((this.w - BOARD) / 2)
-  var by = 15
   this.bx = bx
   this.by = by
 
