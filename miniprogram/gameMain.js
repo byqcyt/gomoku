@@ -25,12 +25,34 @@ function GameMain(canvas, screenW, screenH, dpr) {
   this.thinking = false
   this.status = '当前回合：黑子'
   this.btns = []
+
+  this.page = 'welcome'
+  this.nickName = '游客'
+  this.avatarImg = null
+  this.authed = false
+  this.guideDismissed = false
+
+  this.loadGuideState()
 }
 
 GameMain.prototype.start = function() {
   this.initLayout()
   this.paint()
   this.listen()
+}
+
+GameMain.prototype.loadGuideState = function() {
+  try {
+    this.guideDismissed = wx.getStorageSync('guide_dismissed') === true
+  } catch (e) {
+    this.guideDismissed = false
+  }
+}
+
+GameMain.prototype.saveGuideState = function() {
+  try {
+    wx.setStorageSync('guide_dismissed', true)
+  } catch (e) {}
 }
 
 GameMain.prototype.initLayout = function() {
@@ -58,16 +80,182 @@ GameMain.prototype.initLayout = function() {
   this.btns.push({ x: ax + aw + gap, y: ay, w: aw, h: 32, text: '重新开始', act: 'reset' })
 
   this.statusY = ay + 44
+
+  // 欢迎页按钮
+  var btnW = 180
+  var btnH = 44
+  this.welcomeBtn = {
+    x: Math.floor((this.w - btnW) / 2),
+    y: Math.floor(this.h * 0.55),
+    w: btnW,
+    h: btnH
+  }
+  this.enterBtn = {
+    x: Math.floor((this.w - btnW) / 2),
+    y: Math.floor(this.h * 0.65),
+    w: btnW,
+    h: btnH
+  }
+
+  // 引导页按钮
+  var guideBtnW = 140
+  this.guideBtn = {
+    x: Math.floor((this.w - guideBtnW) / 2),
+    y: Math.floor(this.h * 0.75),
+    w: guideBtnW,
+    h: 40
+  }
 }
 
+// ========== 绘制 ==========
+
 GameMain.prototype.paint = function() {
+  if (this.page === 'welcome') {
+    this.paintWelcome()
+  } else {
+    this.paintGame()
+    if (this.page === 'guide') {
+      this.paintGuide()
+    }
+  }
+}
+
+GameMain.prototype.paintWelcome = function() {
   var ctx = this.ctx
   var d = this.dpr
+  var w = this.w * d
+  var h = this.h * d
+
+  // 背景
+  ctx.fillStyle = '#2C3E50'
+  ctx.fillRect(0, 0, w, h)
+
+  // 标题
+  ctx.fillStyle = '#ECF0F1'
+  ctx.font = 'bold ' + (42 * d) + 'px sans-serif'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('五子棋', w / 2, h * 0.2)
+
+  // 副标题
+  ctx.fillStyle = '#95A5A6'
+  ctx.font = (16 * d) + 'px sans-serif'
+  ctx.fillText('经典策略对弈游戏', w / 2, h * 0.27)
+
+  // 头像
+  var avatarR = 40 * d
+  var avatarY = h * 0.38
+  if (this.avatarImg) {
+    ctx.save()
+    ctx.beginPath()
+    ctx.arc(w / 2, avatarY, avatarR, 0, 6.3)
+    ctx.clip()
+    ctx.drawImage(this.avatarImg, w / 2 - avatarR, avatarY - avatarR, avatarR * 2, avatarR * 2)
+    ctx.restore()
+  } else {
+    ctx.fillStyle = '#7F8C8D'
+    ctx.beginPath()
+    ctx.arc(w / 2, avatarY, avatarR, 0, 6.3)
+    ctx.fill()
+    // 默认头像图标
+    ctx.fillStyle = '#BDC3C7'
+    ctx.beginPath()
+    ctx.arc(w / 2, avatarY - 8 * d, 14 * d, 0, 6.3)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(w / 2, avatarY + 24 * d, 22 * d, 3.14, 0)
+    ctx.fill()
+  }
+
+  // 昵称
+  ctx.fillStyle = '#ECF0F1'
+  ctx.font = (18 * d) + 'px sans-serif'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(this.nickName, w / 2, h * 0.47)
+
+  // 开始游戏按钮
+  var btn = this.welcomeBtn
+  ctx.fillStyle = '#E74C3C'
+  this.roundRect(ctx, btn.x * d, btn.y * d, btn.w * d, btn.h * d, 8 * d)
+  ctx.fill()
+  ctx.fillStyle = '#FFF'
+  ctx.font = 'bold ' + (18 * d) + 'px sans-serif'
+  ctx.fillText(this.authed ? '进入游戏' : '开始游戏', (btn.x + btn.w / 2) * d, (btn.y + btn.h / 2) * d)
+
+  // 授权按钮（未授权时显示）
+  if (!this.authed) {
+    var ebtn = this.enterBtn
+    ctx.fillStyle = 'rgba(255,255,255,0.15)'
+    this.roundRect(ctx, ebtn.x * d, ebtn.y * d, ebtn.w * d, ebtn.h * d, 8 * d)
+    ctx.fill()
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)'
+    ctx.lineWidth = d
+    this.roundRect(ctx, ebtn.x * d, ebtn.y * d, ebtn.w * d, ebtn.h * d, 8 * d)
+    ctx.stroke()
+    ctx.fillStyle = '#BDC3C7'
+    ctx.font = (14 * d) + 'px sans-serif'
+    ctx.fillText('微信授权获取头像昵称', (ebtn.x + ebtn.w / 2) * d, (ebtn.y + ebtn.h / 2) * d)
+  }
+}
+
+GameMain.prototype.paintGame = function() {
+  var ctx = this.ctx
   ctx.fillStyle = '#F5F5F5'
   ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
   this.paintBoard()
   this.paintStatus()
   this.paintBtns()
+
+  // 显示用户昵称（左上角）
+  if (this.authed) {
+    var ctx2 = this.ctx
+    var d = this.dpr
+    ctx2.fillStyle = '#666'
+    ctx2.font = (12 * d) + 'px sans-serif'
+    ctx2.textAlign = 'left'
+    ctx2.textBaseline = 'top'
+    ctx2.fillText('玩家: ' + this.nickName, 10 * d, 6 * d)
+  }
+}
+
+GameMain.prototype.paintGuide = function() {
+  var ctx = this.ctx
+  var d = this.dpr
+  var w = this.w * d
+  var h = this.h * d
+
+  // 半透明遮罩
+  ctx.fillStyle = 'rgba(0,0,0,0.75)'
+  ctx.fillRect(0, 0, w, h)
+
+  // 标题
+  ctx.fillStyle = '#FFF'
+  ctx.font = 'bold ' + (24 * d) + 'px sans-serif'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('游戏说明', w / 2, h * 0.2)
+
+  // 提示列表
+  var tips = [
+    '黑子先行，五子连珠即可获胜',
+    '点击下方按钮切换游戏模式',
+    '支持悔棋功能'
+  ]
+  ctx.font = (16 * d) + 'px sans-serif'
+  ctx.fillStyle = '#ECF0F1'
+  for (var i = 0; i < tips.length; i++) {
+    ctx.fillText('●  ' + tips[i], w / 2, h * 0.33 + i * 40 * d)
+  }
+
+  // 按钮
+  var btn = this.guideBtn
+  ctx.fillStyle = '#3498DB'
+  this.roundRect(ctx, btn.x * d, btn.y * d, btn.w * d, btn.h * d, 8 * d)
+  ctx.fill()
+  ctx.fillStyle = '#FFF'
+  ctx.font = 'bold ' + (16 * d) + 'px sans-serif'
+  ctx.fillText('我知道了', (btn.x + btn.w / 2) * d, (btn.y + btn.h / 2) * d)
 }
 
 GameMain.prototype.paintBoard = function() {
@@ -162,38 +350,138 @@ GameMain.prototype.paintBtns = function() {
   }
 }
 
+// ========== 圆角矩形 ==========
+
+GameMain.prototype.roundRect = function(ctx, x, y, w, h, r) {
+  ctx.beginPath()
+  ctx.moveTo(x + r, y)
+  ctx.lineTo(x + w - r, y)
+  ctx.arcTo(x + w, y, x + w, y + r, r)
+  ctx.lineTo(x + w, y + h - r)
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r)
+  ctx.lineTo(x + r, y + h)
+  ctx.arcTo(x, y + h, x, y + h - r, r)
+  ctx.lineTo(x, y + r)
+  ctx.arcTo(x, y, x + r, y, r)
+  ctx.closePath()
+}
+
+// ========== 触摸事件 ==========
+
 GameMain.prototype.listen = function() {
   var self = this
   wx.onTouchStart(function(e) {
-    if (self.thinking) return
     var tx = e.touches[0].clientX
     var ty = e.touches[0].clientY
 
-    for (var i = 0; i < self.btns.length; i++) {
-      var b = self.btns[i]
-      if (tx >= b.x && tx < b.x + b.w && ty >= b.y && ty < b.y + b.h) {
-        self.clickBtn(b)
-        return
-      }
-    }
-
-    if (self.board.gameOver) return
-
-    var dx = tx - self.bx - PAD
-    var dy = ty - self.by - PAD
-    var col = Math.round(dx / CELL)
-    var row = Math.round(dy / CELL)
-    if (col < 0 || col >= SIZE || row < 0 || row >= SIZE) return
-
-    if (self.board.placeStone(row, col)) {
-      self.updateStatus()
-      self.paint()
-      if (!self.board.gameOver && self.mode !== GameMode.PVP) {
-        self.doAI()
-      }
+    if (self.page === 'welcome') {
+      self.onWelcomeTap(tx, ty)
+    } else if (self.page === 'guide') {
+      self.onGuideTap(tx, ty)
+    } else {
+      self.onGameTap(tx, ty)
     }
   })
 }
+
+GameMain.prototype.onWelcomeTap = function(tx, ty) {
+  var btn = this.welcomeBtn
+  if (tx >= btn.x && tx < btn.x + btn.w && ty >= btn.y && ty < btn.y + btn.h) {
+    // 点击"开始游戏"或"进入游戏"
+    if (this.authed) {
+      this.enterGame()
+    } else {
+      this.enterGame()
+    }
+    return
+  }
+
+  if (!this.authed) {
+    var ebtn = this.enterBtn
+    if (tx >= ebtn.x && tx < ebtn.x + ebtn.w && ty >= ebtn.y && ty < ebtn.y + ebtn.h) {
+      this.doAuth()
+    }
+  }
+}
+
+GameMain.prototype.onGuideTap = function(tx, ty) {
+  var btn = this.guideBtn
+  if (tx >= btn.x && tx < btn.x + btn.w && ty >= btn.y && ty < btn.y + btn.h) {
+    this.guideDismissed = true
+    this.saveGuideState()
+    this.page = 'playing'
+    this.paint()
+  }
+}
+
+GameMain.prototype.onGameTap = function(tx, ty) {
+  if (this.thinking) return
+
+  for (var i = 0; i < this.btns.length; i++) {
+    var b = this.btns[i]
+    if (tx >= b.x && tx < b.x + b.w && ty >= b.y && ty < b.y + b.h) {
+      this.clickBtn(b)
+      return
+    }
+  }
+
+  if (this.board.gameOver) return
+
+  var dx = tx - this.bx - PAD
+  var dy = ty - this.by - PAD
+  var col = Math.round(dx / CELL)
+  var row = Math.round(dy / CELL)
+  if (col < 0 || col >= SIZE || row < 0 || row >= SIZE) return
+
+  if (this.board.placeStone(row, col)) {
+    this.updateStatus()
+    this.paint()
+    if (!this.board.gameOver && this.mode !== GameMode.PVP) {
+      this.doAI()
+    }
+  }
+}
+
+// ========== 授权 ==========
+
+GameMain.prototype.doAuth = function() {
+  var self = this
+  wx.getUserProfile({
+    desc: '用于显示用户昵称和头像',
+    success: function(res) {
+      var info = res.userInfo
+      self.nickName = info.nickName || '玩家'
+      self.authed = true
+
+      // 加载头像
+      if (info.avatarUrl) {
+        var img = wx.createImage()
+        img.onload = function() {
+          self.avatarImg = img
+          self.paint()
+        }
+        img.src = info.avatarUrl
+      }
+      self.paint()
+    },
+    fail: function() {
+      // 用户拒绝授权，不影响使用
+    }
+  })
+}
+
+// ========== 页面流转 ==========
+
+GameMain.prototype.enterGame = function() {
+  if (this.guideDismissed) {
+    this.page = 'playing'
+  } else {
+    this.page = 'guide'
+  }
+  this.paint()
+}
+
+// ========== 按钮操作 ==========
 
 GameMain.prototype.clickBtn = function(b) {
   if (b.act === 'mode') {
