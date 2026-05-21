@@ -27,7 +27,8 @@
     "localPlugins": false,
     "disableUseStrict": false,
     "useCompilerPlugins": false,
-    "condition": false
+    "condition": false,
+    "es6": true
   },
   "compileType": "miniprogram",
   "appid": "wxb64dcc9f86549bf3",
