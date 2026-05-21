@@ -13,11 +13,12 @@ var CELL = 22
 var PAD = 15
 var BOARD = PAD * 2 + CELL * (SIZE - 1)
 
-function GameMain(canvas, screenW, screenH) {
+function GameMain(canvas, screenW, screenH, dpr) {
   this.canvas = canvas
   this.ctx = canvas.getContext('2d')
   this.w = screenW
   this.h = screenH
+  this.dpr = dpr
   this.board = new GameBoard()
   this.mode = GameMode.PVE_MEDIUM
   this.modeIdx = 2
@@ -60,8 +61,9 @@ GameMain.prototype.initLayout = function() {
 
 GameMain.prototype.paint = function() {
   var ctx = this.ctx
+  var d = this.dpr
   ctx.fillStyle = '#F5F5F5'
-  ctx.fillRect(0, 0, this.w, this.h)
+  ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
   this.paintBoard()
   this.paintStatus()
   this.paintBtns()
@@ -69,23 +71,27 @@ GameMain.prototype.paint = function() {
 
 GameMain.prototype.paintBoard = function() {
   var ctx = this.ctx
-  var ox = this.bx
-  var oy = this.by
+  var d = this.dpr
+  var ox = this.bx * d
+  var oy = this.by * d
+  var bsz = BOARD * d
+  var pad = PAD * d
+  var cell = CELL * d
 
   ctx.fillStyle = '#DEB887'
-  ctx.fillRect(ox, oy, BOARD, BOARD)
+  ctx.fillRect(ox, oy, bsz, bsz)
 
   ctx.strokeStyle = '#333'
-  ctx.lineWidth = 1
+  ctx.lineWidth = d
   for (var i = 0; i < SIZE; i++) {
-    var p = PAD + i * CELL
+    var p = pad + i * cell
     ctx.beginPath()
-    ctx.moveTo(ox + PAD, oy + p)
-    ctx.lineTo(ox + PAD + (SIZE - 1) * CELL, oy + p)
+    ctx.moveTo(ox + pad, oy + p)
+    ctx.lineTo(ox + pad + (SIZE - 1) * cell, oy + p)
     ctx.stroke()
     ctx.beginPath()
-    ctx.moveTo(ox + p, oy + PAD)
-    ctx.lineTo(ox + p, oy + PAD + (SIZE - 1) * CELL)
+    ctx.moveTo(ox + p, oy + pad)
+    ctx.lineTo(ox + p, oy + pad + (SIZE - 1) * cell)
     ctx.stroke()
   }
 
@@ -94,23 +100,23 @@ GameMain.prototype.paintBoard = function() {
   for (var s = 0; s < 5; s++) {
     var r = stars[s][0], c = stars[s][1]
     ctx.beginPath()
-    ctx.arc(ox + PAD + c * CELL, oy + PAD + r * CELL, 3, 0, 6.3)
+    ctx.arc(ox + pad + c * cell, oy + pad + r * cell, 3 * d, 0, 6.3)
     ctx.fill()
   }
 
-  var rad = CELL * 0.42
+  var rad = cell * 0.42
   for (var r = 0; r < SIZE; r++) {
     for (var c = 0; c < SIZE; c++) {
       var v = this.board.getCell(r, c)
       if (v === EMPTY) continue
-      var cx = ox + PAD + c * CELL
-      var cy = oy + PAD + r * CELL
+      var cx = ox + pad + c * cell
+      var cy = oy + pad + r * cell
       ctx.beginPath()
       ctx.arc(cx, cy, rad, 0, 6.3)
       ctx.fillStyle = v === BLACK ? '#000' : '#FFF'
       ctx.fill()
       ctx.strokeStyle = '#555'
-      ctx.lineWidth = 1
+      ctx.lineWidth = d
       ctx.stroke()
     }
   }
@@ -118,38 +124,40 @@ GameMain.prototype.paintBoard = function() {
   if (this.board.winLine) {
     var wl = this.board.winLine
     ctx.strokeStyle = 'red'
-    ctx.lineWidth = 3
+    ctx.lineWidth = 3 * d
     ctx.beginPath()
-    ctx.moveTo(ox + PAD + wl.sc * CELL, oy + PAD + wl.sr * CELL)
-    ctx.lineTo(ox + PAD + wl.ec * CELL, oy + PAD + wl.er * CELL)
+    ctx.moveTo(ox + pad + wl.sc * cell, oy + pad + wl.sr * cell)
+    ctx.lineTo(ox + pad + wl.ec * cell, oy + pad + wl.er * cell)
     ctx.stroke()
   }
 }
 
 GameMain.prototype.paintStatus = function() {
   var ctx = this.ctx
+  var d = this.dpr
   ctx.fillStyle = '#333'
-  ctx.font = '14px sans-serif'
+  ctx.font = (14 * d) + 'px sans-serif'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   var t = this.thinking ? this.status + ' (AI思考中...)' : this.status
-  ctx.fillText(t, this.w / 2, this.statusY)
+  ctx.fillText(t, (this.w / 2) * d, this.statusY * d)
 }
 
 GameMain.prototype.paintBtns = function() {
   var ctx = this.ctx
+  var d = this.dpr
   for (var i = 0; i < this.btns.length; i++) {
     var b = this.btns[i]
     ctx.fillStyle = (b.act === 'mode' && b.idx === this.modeIdx) ? '#DEB887' : '#FFF'
-    ctx.fillRect(b.x, b.y, b.w, b.h)
+    ctx.fillRect(b.x * d, b.y * d, b.w * d, b.h * d)
     ctx.strokeStyle = '#CCC'
-    ctx.lineWidth = 1
-    ctx.strokeRect(b.x, b.y, b.w, b.h)
+    ctx.lineWidth = d
+    ctx.strokeRect(b.x * d, b.y * d, b.w * d, b.h * d)
     ctx.fillStyle = '#333'
-    ctx.font = '13px sans-serif'
+    ctx.font = (13 * d) + 'px sans-serif'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText(b.text, b.x + b.w / 2, b.y + b.h / 2)
+    ctx.fillText(b.text, (b.x + b.w / 2) * d, (b.y + b.h / 2) * d)
   }
 }
 
