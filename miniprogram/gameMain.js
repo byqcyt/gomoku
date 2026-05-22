@@ -690,7 +690,9 @@ GameMain.prototype.clickBtn = function(b) {
   } else if (b.act === 'home') {
     this.board.reset()
     this.thinking = false
+    this.stopTimer()
     this.status = '当前回合：黑子'
+    this.guideDismissed = false
     this.page = 'welcome'
     this.paint()
   }
