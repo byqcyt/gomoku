@@ -613,28 +613,10 @@ GameMain.prototype.onGameTap = function(tx, ty) {
 
 GameMain.prototype.doAuth = function() {
   var self = this
-  var d = this.dpr
-  var btn = this.enterBtn
 
-  // 小游戏用createUserInfoButton获取用户信息
-  var authBtn = wx.createUserInfoButton({
-    type: 'text',
-    text: '',
-    style: {
-      left: btn.x,
-      top: btn.y,
-      width: btn.w,
-      height: btn.h,
-      backgroundColor: 'rgba(0,0,0,0)',
-      color: '#ffffff',
-      fontSize: 0,
-      borderRadius: 0
-    }
-  })
-
-  authBtn.onTap(function(res) {
-    authBtn.destroy()
-    if (res.userInfo) {
+  wx.getUserInfo({
+    withCredentials: true,
+    success: function(res) {
       var info = res.userInfo
       self.nickName = info.nickName || '玩家'
       self.authed = true
@@ -648,6 +630,14 @@ GameMain.prototype.doAuth = function() {
         img.src = info.avatarUrl
       }
       self.paint()
+    },
+    fail: function() {
+      // 开发者工具中可能需要先在设置里授权
+      wx.showModal({
+        title: '授权提示',
+        content: '请点击右上角菜单→设置，开启用户信息授权',
+        showCancel: false
+      })
     }
   })
 }
