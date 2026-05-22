@@ -331,6 +331,21 @@ GameMain.prototype.paintWelcome = function() {
     ctx.font = (14 * d) + 'px sans-serif'
     ctx.fillText('获取头像昵称', (ebtn.x + ebtn.w / 2) * d, (ebtn.y + ebtn.h / 2) * d)
   }
+
+  // 右上角更多按钮（已授权时显示）
+  if (this.authed) {
+    var moreW = 36, moreH = 30
+    var moreX = this.w - 12 - moreW
+    var moreY = 30
+    this.moreBtn = { x: moreX, y: moreY, w: moreW, h: moreH }
+    ctx.fillStyle = 'rgba(255,255,255,0.15)'
+    this.roundRect(ctx, moreX * d, moreY * d, moreW * d, moreH * d, 6 * d)
+    ctx.fill()
+    ctx.fillStyle = '#ECF0F1'
+    ctx.font = (18 * d) + 'px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('···', (moreX + moreW / 2) * d, (moreY + moreH / 2) * d)
+  }
 }
 
 GameMain.prototype.paintGame = function() {
@@ -588,6 +603,15 @@ GameMain.prototype.listen = function() {
 }
 
 GameMain.prototype.onWelcomeTap = function(tx, ty) {
+  // 更多按钮 - 解除授权
+  if (this.moreBtn && this.authed) {
+    var mb = this.moreBtn
+    if (tx >= mb.x && tx < mb.x + mb.w && ty >= mb.y && ty < mb.y + mb.h) {
+      this.clearAuth()
+      return
+    }
+  }
+
   var btn = this.welcomeBtn
   if (tx >= btn.x && tx < btn.x + btn.w && ty >= btn.y && ty < btn.y + btn.h) {
     this.enterGame()
@@ -719,6 +743,16 @@ GameMain.prototype.onAuthSuccess = function(info) {
     }
     img.src = info.avatarUrl
   }
+  this.paint()
+}
+
+GameMain.prototype.clearAuth = function() {
+  this.nickName = '游客'
+  this.avatarImg = null
+  this._avatarUrl = ''
+  this.authed = false
+  try { wx.removeStorageSync('user_info') } catch (e) {}
+  if (this.authBtn) { this.authBtn.show() }
   this.paint()
 }
 
