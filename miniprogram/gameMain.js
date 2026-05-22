@@ -631,7 +631,7 @@ GameMain.prototype.setupAuthButton = function() {
         top: ebtn.y,
         width: ebtn.w,
         height: ebtn.h,
-        backgroundColor: '#27AE60',
+        backgroundColor: 'rgba(0,0,0,0)',
         color: 'rgba(255,255,255,0)',
         fontSize: 1,
         borderRadius: 22
