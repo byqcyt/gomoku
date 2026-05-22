@@ -30,6 +30,7 @@ function GameMain(canvas, screenW, screenH, dpr) {
   this.nickName = '游客'
   this.avatarImg = null
   this.authed = false
+  this.authBtn = null
   this.guideDismissed = false
 
   this.anim = null
@@ -43,6 +44,7 @@ function GameMain(canvas, screenW, screenH, dpr) {
 
 GameMain.prototype.start = function() {
   this.initLayout()
+  this.setupAuthButton()
   this.paint()
   this.listen()
 }
@@ -548,11 +550,6 @@ GameMain.prototype.onWelcomeTap = function(tx, ty) {
     this.enterGame()
     return
   }
-
-  var ebtn = this.enterBtn
-  if (tx >= ebtn.x && tx < ebtn.x + ebtn.w && ty >= ebtn.y && ty < ebtn.y + ebtn.h) {
-    this.doAuth()
-  }
 }
 
 GameMain.prototype.onGuideTap = function(tx, ty) {
@@ -613,36 +610,37 @@ GameMain.prototype.onGameTap = function(tx, ty) {
 
 // ========== 授权 ==========
 
-GameMain.prototype.doAuth = function() {
+GameMain.prototype.setupAuthButton = function() {
   var self = this
   var ebtn = this.enterBtn
 
   try {
     var btn = wx.createUserInfoButton({
       type: 'text',
-      text: '授权',
+      text: '获取头像昵称',
       style: {
         left: ebtn.x,
         top: ebtn.y,
         width: ebtn.w,
         height: ebtn.h,
-        backgroundColor: '#E67E22',
+        backgroundColor: '#27AE60',
         color: '#ffffff',
-        fontSize: 16,
-        borderRadius: 8
+        fontSize: 14,
+        borderRadius: 22
       }
     })
 
     btn.onTap(function(res) {
       btn.destroy()
+      self.authBtn = null
       if (res.userInfo) {
         self.onAuthSuccess(res.userInfo)
       }
     })
-    return
-  } catch (e) {}
 
-  this.enterGame()
+    this.authBtn = btn
+    if (this.authed) btn.hide()
+  } catch (e) {}
 }
 
 GameMain.prototype.onAuthSuccess = function(info) {
@@ -664,6 +662,7 @@ GameMain.prototype.onAuthSuccess = function(info) {
 // ========== 页面流转 ==========
 
 GameMain.prototype.enterGame = function() {
+  if (this.authBtn) { this.authBtn.hide() }
   if (this.guideDismissed) {
     this.page = 'playing'
     this.startTimer()
@@ -697,6 +696,7 @@ GameMain.prototype.clickBtn = function(b) {
     this.status = '当前回合：黑子'
     this.guideDismissed = false
     this.page = 'welcome'
+    if (!this.authed && this.authBtn) { this.authBtn.show() }
     this.paint()
   }
 }
