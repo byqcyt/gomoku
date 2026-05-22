@@ -573,30 +573,35 @@ GameMain.prototype.onGameTap = function(tx, ty) {
 GameMain.prototype.doAuth = function() {
   var self = this
 
-  // 优先用getUserProfile（真机支持）
-  if (typeof wx.getUserProfile === 'function') {
-    wx.getUserProfile({
-      desc: '用于显示用户昵称和头像',
-      success: function(res) {
-        self.onAuthSuccess(res.userInfo)
-      },
-      fail: function() {}
-    })
-    return
-  }
+  try {
+    if (typeof wx.getUserProfile === 'function') {
+      wx.getUserProfile({
+        desc: '用于显示用户昵称和头像',
+        success: function(res) {
+          self.onAuthSuccess(res.userInfo)
+        },
+        fail: function() {
+          self.enterGame()
+        }
+      })
+      return
+    }
+  } catch (e) {}
 
-  // 其次用getUserInfo
-  if (typeof wx.getUserInfo === 'function') {
-    wx.getUserInfo({
-      success: function(res) {
-        self.onAuthSuccess(res.userInfo)
-      },
-      fail: function() {}
-    })
-    return
-  }
+  try {
+    if (typeof wx.getUserInfo === 'function') {
+      wx.getUserInfo({
+        success: function(res) {
+          self.onAuthSuccess(res.userInfo)
+        },
+        fail: function() {
+          self.enterGame()
+        }
+      })
+      return
+    }
+  } catch (e) {}
 
-  // 都不支持，直接进游戏
   this.enterGame()
 }
 
