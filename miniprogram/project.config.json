@@ -28,7 +28,10 @@
     "disableUseStrict": false,
     "useCompilerPlugins": false,
     "condition": false,
-    "es6": true
+    "es6": true,
+    "compileWorklet": false,
+    "swc": false,
+    "disableSWC": true
   },
   "compileType": "game",
   "appid": "wxb64dcc9f86549bf3",

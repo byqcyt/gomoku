@@ -239,6 +239,11 @@ GameMain.prototype.paintWelcome = function() {
   var avatarR = 40 * d
   var avatarY = h * 0.38
   if (this.avatarImg) {
+    // 头像边框
+    ctx.fillStyle = 'rgba(255,255,255,0.3)'
+    ctx.beginPath()
+    ctx.arc(w / 2, avatarY, avatarR + 3 * d, 0, 6.3)
+    ctx.fill()
     ctx.save()
     ctx.beginPath()
     ctx.arc(w / 2, avatarY, avatarR, 0, 6.3)
@@ -246,16 +251,25 @@ GameMain.prototype.paintWelcome = function() {
     ctx.drawImage(this.avatarImg, w / 2 - avatarR, avatarY - avatarR, avatarR * 2, avatarR * 2)
     ctx.restore()
   } else {
-    ctx.fillStyle = '#7F8C8D'
+    // 默认头像 - 棋子样式
+    ctx.fillStyle = 'rgba(255,255,255,0.15)'
     ctx.beginPath()
     ctx.arc(w / 2, avatarY, avatarR, 0, 6.3)
     ctx.fill()
-    ctx.fillStyle = '#BDC3C7'
+    // 黑白棋子图标
+    ctx.fillStyle = '#FFF'
     ctx.beginPath()
-    ctx.arc(w / 2, avatarY - 8 * d, 14 * d, 0, 6.3)
+    ctx.arc(w / 2 - 12 * d, avatarY, 16 * d, 0, 6.3)
     ctx.fill()
+    ctx.fillStyle = '#2C3E50'
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)'
+    ctx.lineWidth = d
     ctx.beginPath()
-    ctx.arc(w / 2, avatarY + 24 * d, 22 * d, 3.14, 0)
+    ctx.arc(w / 2 - 12 * d, avatarY, 16 * d, 0, 6.3)
+    ctx.stroke()
+    ctx.fillStyle = '#333'
+    ctx.beginPath()
+    ctx.arc(w / 2 + 12 * d, avatarY, 16 * d, 0, 6.3)
     ctx.fill()
   }
 
@@ -268,8 +282,8 @@ GameMain.prototype.paintWelcome = function() {
 
   // 开始/进入游戏按钮
   var btn = this.welcomeBtn
-  ctx.fillStyle = '#E74C3C'
-  this.roundRect(ctx, btn.x * d, btn.y * d, btn.w * d, btn.h * d, 8 * d)
+  ctx.fillStyle = '#E67E22'
+  this.roundRect(ctx, btn.x * d, btn.y * d, btn.w * d, btn.h * d, 22 * d)
   ctx.fill()
   ctx.fillStyle = '#FFF'
   ctx.font = 'bold ' + (18 * d) + 'px sans-serif'
@@ -278,16 +292,12 @@ GameMain.prototype.paintWelcome = function() {
   // 授权按钮（未授权时显示）
   if (!this.authed) {
     var ebtn = this.enterBtn
-    ctx.fillStyle = 'rgba(255,255,255,0.15)'
-    this.roundRect(ctx, ebtn.x * d, ebtn.y * d, ebtn.w * d, ebtn.h * d, 8 * d)
+    ctx.fillStyle = '#27AE60'
+    this.roundRect(ctx, ebtn.x * d, ebtn.y * d, ebtn.w * d, ebtn.h * d, 22 * d)
     ctx.fill()
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)'
-    ctx.lineWidth = d
-    this.roundRect(ctx, ebtn.x * d, ebtn.y * d, ebtn.w * d, ebtn.h * d, 8 * d)
-    ctx.stroke()
-    ctx.fillStyle = '#BDC3C7'
+    ctx.fillStyle = '#FFF'
     ctx.font = (14 * d) + 'px sans-serif'
-    ctx.fillText('微信授权获取头像昵称', (ebtn.x + ebtn.w / 2) * d, (ebtn.y + ebtn.h / 2) * d)
+    ctx.fillText('获取头像昵称', (ebtn.x + ebtn.w / 2) * d, (ebtn.y + ebtn.h / 2) * d)
   }
 }
 
