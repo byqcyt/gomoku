@@ -32,6 +32,8 @@ function GameMain(canvas, screenW, screenH, dpr) {
   this.authed = false
   this.guideDismissed = false
 
+  this.stats = { total: 0, win: 0, lose: 0 }
+  this.loadStats()
   this.initAudio()
   this.loadGuideState()
 }
@@ -54,6 +56,26 @@ GameMain.prototype.saveGuideState = function() {
   try {
     wx.setStorageSync('guide_dismissed', true)
   } catch (e) {}
+}
+
+GameMain.prototype.loadStats = function() {
+  try {
+    var s = wx.getStorageSync('game_stats')
+    if (s) this.stats = JSON.parse(s)
+  } catch (e) {}
+}
+
+GameMain.prototype.saveStats = function() {
+  try {
+    wx.setStorageSync('game_stats', JSON.stringify(this.stats))
+  } catch (e) {}
+}
+
+GameMain.prototype.recordResult = function(winner) {
+  this.stats.total++
+  if (winner === BLACK) this.stats.win++
+  else this.stats.lose++
+  this.saveStats()
 }
 
 GameMain.prototype.initAudio = function() {
@@ -234,16 +256,15 @@ GameMain.prototype.paintGame = function() {
   this.paintStatus()
   this.paintBtns()
 
-  // 显示用户昵称（左上角）
-  if (this.authed) {
-    var ctx2 = this.ctx
-    var d = this.dpr
-    ctx2.fillStyle = '#666'
-    ctx2.font = (12 * d) + 'px sans-serif'
-    ctx2.textAlign = 'left'
-    ctx2.textBaseline = 'top'
-    ctx2.fillText('玩家: ' + this.nickName, 10 * d, 6 * d)
-  }
+  // 显示统计信息（右上角）
+  var ctx2 = this.ctx
+  var d = this.dpr
+  ctx2.fillStyle = '#999'
+  ctx2.font = (11 * d) + 'px sans-serif'
+  ctx2.textAlign = 'right'
+  ctx2.textBaseline = 'top'
+  var s = this.stats
+  ctx2.fillText('战绩 ' + s.total + '局 ' + s.win + '胜 ' + s.lose + '负', (this.w - 10) * d, 8 * d)
 }
 
 GameMain.prototype.paintGuide = function() {
@@ -489,6 +510,7 @@ GameMain.prototype.onGameTap = function(tx, ty) {
   if (this.board.placeStone(row, col)) {
     if (this.board.gameOver) {
       this.playSound('win')
+      this.recordResult(this.board.winner)
     } else {
       this.playSound('place')
     }
@@ -583,6 +605,7 @@ GameMain.prototype.doAI = function() {
       self.board.placeStone(mv.row, mv.col)
       if (self.board.gameOver) {
         self.playSound('win')
+        self.recordResult(self.board.winner)
       } else {
         self.playSound('place')
       }
