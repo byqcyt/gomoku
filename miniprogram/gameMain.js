@@ -309,6 +309,22 @@ GameMain.prototype.paintGame = function() {
   ctx2.textBaseline = 'top'
   var s = this.stats
   ctx2.fillText('战绩 ' + s.total + '局 ' + s.win + '胜 ' + s.lose + '负', (this.w - 10) * d, 8 * d)
+
+  // 游戏结束时显示分享按钮
+  if (this.board.gameOver) {
+    var sw = 80, sh = 30
+    var sx = Math.floor((this.w - sw) / 2)
+    var sy = this.statusY + 24
+    this.shareBtn = { x: sx, y: sy, w: sw, h: sh }
+    ctx2.fillStyle = '#27AE60'
+    this.roundRect(ctx2, sx * d, sy * d, sw * d, sh * d, 6 * d)
+    ctx2.fill()
+    ctx2.fillStyle = '#FFF'
+    ctx2.font = (13 * d) + 'px sans-serif'
+    ctx2.textAlign = 'center'
+    ctx2.textBaseline = 'middle'
+    ctx2.fillText('分享战绩', (sx + sw / 2) * d, (sy + sh / 2) * d)
+  }
 }
 
 GameMain.prototype.paintGuide = function() {
@@ -559,7 +575,15 @@ GameMain.prototype.onGameTap = function(tx, ty) {
     }
   }
 
-  if (this.board.gameOver) return
+  if (this.board.gameOver) {
+    if (this.shareBtn) {
+      var sb = this.shareBtn
+      if (tx >= sb.x && tx < sb.x + sb.w && ty >= sb.y && ty < sb.y + sb.h) {
+        this.doShare()
+      }
+    }
+    return
+  }
 
   var dx = tx - this.bx - PAD
   var dy = ty - this.by - PAD
@@ -694,6 +718,14 @@ GameMain.prototype.updateStatus = function() {
     var p = this.board.currentPlayer === BLACK ? '黑子' : '白子'
     this.status = '当前回合：' + p
   }
+}
+
+GameMain.prototype.doShare = function() {
+  var s = this.stats
+  var title = '我在《神奇的五子棋》打了' + s.total + '局，赢了' + s.win + '局！来挑战我吧！'
+  try {
+    wx.shareAppMessage({ title: title })
+  } catch (e) {}
 }
 
 module.exports = { GameMain: GameMain }
