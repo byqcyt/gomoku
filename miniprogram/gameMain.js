@@ -40,6 +40,7 @@ function GameMain(canvas, screenW, screenH, dpr) {
   this.loadStats()
   this.initAudio()
   this.loadGuideState()
+  this.loadUserInfo()
 }
 
 GameMain.prototype.start = function() {
@@ -60,6 +61,35 @@ GameMain.prototype.loadGuideState = function() {
 GameMain.prototype.saveGuideState = function() {
   try {
     wx.setStorageSync('guide_dismissed', true)
+  } catch (e) {}
+}
+
+GameMain.prototype.loadUserInfo = function() {
+  try {
+    var info = wx.getStorageSync('user_info')
+    if (info) {
+      var data = JSON.parse(info)
+      this.nickName = data.nickName || '游客'
+      this.authed = true
+      if (data.avatarUrl) {
+        var self = this
+        var img = wx.createImage()
+        img.onload = function() {
+          self.avatarImg = img
+          self.paint()
+        }
+        img.src = data.avatarUrl
+      }
+    }
+  } catch (e) {}
+}
+
+GameMain.prototype.saveUserInfo = function() {
+  try {
+    wx.setStorageSync('user_info', JSON.stringify({
+      nickName: this.nickName,
+      avatarUrl: this._avatarUrl || ''
+    }))
   } catch (e) {}
 }
 
@@ -678,6 +708,8 @@ GameMain.prototype.onAuthSuccess = function(info) {
   if (!info) return
   this.nickName = info.nickName || '玩家'
   this.authed = true
+  this._avatarUrl = info.avatarUrl || ''
+  this.saveUserInfo()
   if (info.avatarUrl) {
     var self = this
     var img = wx.createImage()
