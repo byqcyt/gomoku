@@ -699,6 +699,7 @@ GameMain.prototype.clickBtn = function(b) {
     this.board.reset()
     this.thinking = false
     this.stopTimer()
+    this.timer = 30
     this.status = '当前回合：黑子'
     this.guideDismissed = false
     this.page = 'welcome'

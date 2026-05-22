@@ -18,6 +18,7 @@ wx.onAppShow(function() {
   main.thinking = false
   main.status = '当前回合：黑子'
   main.stopTimer()
+  main.timer = 30
   if (!main.authed && main.authBtn) { main.authBtn.show() }
   main.paint()
 })
