@@ -243,6 +243,19 @@ GameMain.prototype.paintWelcome = function() {
   ctx.fillStyle = '#FFF'
   ctx.font = 'bold ' + (18 * d) + 'px sans-serif'
   ctx.fillText('开始游戏', (btn.x + btn.w / 2) * d, (btn.y + btn.h / 2) * d)
+
+  // 授权按钮
+  var ebtn = this.enterBtn
+  ctx.fillStyle = 'rgba(255,255,255,0.15)'
+  this.roundRect(ctx, ebtn.x * d, ebtn.y * d, ebtn.w * d, ebtn.h * d, 8 * d)
+  ctx.fill()
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)'
+  ctx.lineWidth = d
+  this.roundRect(ctx, ebtn.x * d, ebtn.y * d, ebtn.w * d, ebtn.h * d, 8 * d)
+  ctx.stroke()
+  ctx.fillStyle = '#BDC3C7'
+  ctx.font = (14 * d) + 'px sans-serif'
+  ctx.fillText('微信授权获取头像昵称', (ebtn.x + ebtn.w / 2) * d, (ebtn.y + ebtn.h / 2) * d)
 }
 
 GameMain.prototype.paintGame = function() {
@@ -492,6 +505,11 @@ GameMain.prototype.onWelcomeTap = function(tx, ty) {
     this.enterGame()
     return
   }
+
+  var ebtn = this.enterBtn
+  if (tx >= ebtn.x && tx < ebtn.x + ebtn.w && ty >= ebtn.y && ty < ebtn.y + ebtn.h) {
+    this.doAuth()
+  }
 }
 
 GameMain.prototype.onGuideTap = function(tx, ty) {
@@ -553,7 +571,49 @@ GameMain.prototype.onGameTap = function(tx, ty) {
 // ========== 授权 ==========
 
 GameMain.prototype.doAuth = function() {
-  // 小游戏环境不支持用户信息API，跳过授权
+  var self = this
+
+  // 优先用getUserProfile（真机支持）
+  if (typeof wx.getUserProfile === 'function') {
+    wx.getUserProfile({
+      desc: '用于显示用户昵称和头像',
+      success: function(res) {
+        self.onAuthSuccess(res.userInfo)
+      },
+      fail: function() {}
+    })
+    return
+  }
+
+  // 其次用getUserInfo
+  if (typeof wx.getUserInfo === 'function') {
+    wx.getUserInfo({
+      success: function(res) {
+        self.onAuthSuccess(res.userInfo)
+      },
+      fail: function() {}
+    })
+    return
+  }
+
+  // 都不支持，直接进游戏
+  this.enterGame()
+}
+
+GameMain.prototype.onAuthSuccess = function(info) {
+  if (!info) return
+  this.nickName = info.nickName || '玩家'
+  this.authed = true
+  if (info.avatarUrl) {
+    var self = this
+    var img = wx.createImage()
+    img.onload = function() {
+      self.avatarImg = img
+      self.paint()
+    }
+    img.src = info.avatarUrl
+  }
+  this.paint()
 }
 
 // ========== 页面流转 ==========
