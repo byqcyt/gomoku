@@ -338,12 +338,13 @@ GameMain.prototype.paintWelcome = function() {
     var moreX = this.w - 12 - moreW
     var moreY = 30
     this.moreBtn = { x: moreX, y: moreY, w: moreW, h: moreH }
-    ctx.fillStyle = 'rgba(255,255,255,0.15)'
+    ctx.fillStyle = 'rgba(255,255,255,0.2)'
     this.roundRect(ctx, moreX * d, moreY * d, moreW * d, moreH * d, 6 * d)
     ctx.fill()
-    ctx.fillStyle = '#ECF0F1'
-    ctx.font = (18 * d) + 'px sans-serif'
+    ctx.fillStyle = '#FFF'
+    ctx.font = 'bold ' + (20 * d) + 'px sans-serif'
     ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
     ctx.fillText('···', (moreX + moreW / 2) * d, (moreY + moreH / 2) * d)
   }
 }
