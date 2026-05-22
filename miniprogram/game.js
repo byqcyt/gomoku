@@ -11,3 +11,11 @@ canvas.height = screenH * dpr
 
 var main = new GameMain(canvas, screenW, screenH, dpr)
 main.start()
+
+wx.onShow(function() {
+  main.page = 'welcome'
+  main.board.reset()
+  main.thinking = false
+  main.status = '当前回合：黑子'
+  main.paint()
+})
