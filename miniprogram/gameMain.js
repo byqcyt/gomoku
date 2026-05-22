@@ -113,7 +113,7 @@ GameMain.prototype.startTimer = function() {
   self.timer = 30
   self.timerId = setInterval(function() {
     self.timer--
-    if (self.timer <= 10) self.paint()
+    self.paint()
     if (self.timer <= 0) {
       self.stopTimer()
       self.board.gameOver = true
@@ -458,11 +458,11 @@ GameMain.prototype.paintStatus = function() {
 
   // 倒计时
   if (!this.board.gameOver && !this.thinking) {
-    var color = this.timer <= 10 ? '#E74C3C' : '#999'
+    var color = this.timer <= 5 ? '#E74C3C' : '#999'
     ctx.fillStyle = color
-    ctx.font = (12 * d) + 'px sans-serif'
+    ctx.font = 'bold ' + (18 * d) + 'px sans-serif'
     ctx.textAlign = 'right'
-    ctx.fillText(this.timer + 's', (this.w - 10) * d, (this.statusY + 20) * d)
+    ctx.fillText(this.timer + 's', (this.w - 10) * d, (this.statusY + 24) * d)
   }
 }
 
