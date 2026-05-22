@@ -412,7 +412,7 @@ GameMain.prototype.paintBoard = function() {
     ctx.fill()
   }
 
-  var rad = cell * 0.42
+  var rad = cell * 0.38
   for (var r = 0; r < SIZE; r++) {
     for (var c = 0; c < SIZE; c++) {
       var v = this.board.getCell(r, c)
