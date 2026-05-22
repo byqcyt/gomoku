@@ -572,34 +572,31 @@ GameMain.prototype.onGameTap = function(tx, ty) {
 
 GameMain.prototype.doAuth = function() {
   var self = this
+  var ebtn = this.enterBtn
 
   try {
-    if (typeof wx.getUserProfile === 'function') {
-      wx.getUserProfile({
-        desc: '用于显示用户昵称和头像',
-        success: function(res) {
-          self.onAuthSuccess(res.userInfo)
-        },
-        fail: function() {
-          self.enterGame()
-        }
-      })
-      return
-    }
-  } catch (e) {}
+    var btn = wx.createUserInfoButton({
+      type: 'text',
+      text: '授权',
+      style: {
+        left: ebtn.x,
+        top: ebtn.y,
+        width: ebtn.w,
+        height: ebtn.h,
+        backgroundColor: '#E67E22',
+        color: '#ffffff',
+        fontSize: 16,
+        borderRadius: 8
+      }
+    })
 
-  try {
-    if (typeof wx.getUserInfo === 'function') {
-      wx.getUserInfo({
-        success: function(res) {
-          self.onAuthSuccess(res.userInfo)
-        },
-        fail: function() {
-          self.enterGame()
-        }
-      })
-      return
-    }
+    btn.onTap(function(res) {
+      btn.destroy()
+      if (res.userInfo) {
+        self.onAuthSuccess(res.userInfo)
+      }
+    })
+    return
   } catch (e) {}
 
   this.enterGame()
