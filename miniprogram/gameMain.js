@@ -711,6 +711,7 @@ GameMain.prototype.clickBtn = function(b) {
 GameMain.prototype.resetGame = function() {
   this.board.reset()
   this.thinking = false
+  this.stopTimer()
   this.timer = 30
   this.updateStatus()
   this.paint()
