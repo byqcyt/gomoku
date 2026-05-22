@@ -33,8 +33,6 @@
   "compileType": "game",
   "appid": "wxb64dcc9f86549bf3",
   "projectname": "gomoku",
-  "miniprogramRoot": "./",
-  "srcMiniprogramRoot": "./",
   "simulatorPluginLibVersion": {},
   "isGameTourist": false,
   "editorSetting": {},
