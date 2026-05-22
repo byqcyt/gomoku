@@ -332,14 +332,14 @@ GameMain.prototype.paintWelcome = function() {
     ctx.fillText('获取头像昵称', (ebtn.x + ebtn.w / 2) * d, (ebtn.y + ebtn.h / 2) * d)
   }
 
-  // 重新授权按钮（已授权时显示）
+  // 重新授权按钮（已授权时显示，进入游戏按钮下方）
   if (this.authed) {
-    var reW = 70, reH = 24
+    var reW = 80, reH = 28
     var reX = Math.floor((this.w - reW) / 2)
-    var reY = Math.floor(this.h * 0.52)
+    var reY = btn.y + btn.h + 12
     this.moreBtn = { x: reX, y: reY, w: reW, h: reH }
     ctx.fillStyle = 'rgba(255,255,255,0.15)'
-    this.roundRect(ctx, reX * d, reY * d, reW * d, reH * d, 12 * d)
+    this.roundRect(ctx, reX * d, reY * d, reW * d, reH * d, 14 * d)
     ctx.fill()
     ctx.fillStyle = 'rgba(255,255,255,0.6)'
     ctx.font = (12 * d) + 'px sans-serif'
