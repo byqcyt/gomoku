@@ -137,7 +137,7 @@ GameMain.prototype.paintWelcome = function() {
   ctx.font = 'bold ' + (42 * d) + 'px sans-serif'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText('五子棋', w / 2, h * 0.2)
+  ctx.fillText('神奇的五子棋', w / 2, h * 0.2)
 
   // 副标题
   ctx.fillStyle = '#95A5A6'
