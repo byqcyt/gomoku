@@ -566,7 +566,6 @@ GameMain.prototype.onGuideTap = function(tx, ty) {
     this.guideDismissed = true
     this.saveGuideState()
     this.page = 'playing'
-    this.startTimer()
     this.paint()
   }
 }
@@ -673,7 +672,6 @@ GameMain.prototype.enterGame = function() {
   if (this.authBtn) { this.authBtn.hide() }
   if (this.guideDismissed) {
     this.page = 'playing'
-    this.startTimer()
   } else {
     this.page = 'guide'
   }
