@@ -613,14 +613,32 @@ GameMain.prototype.onGameTap = function(tx, ty) {
 
 GameMain.prototype.doAuth = function() {
   var self = this
-  wx.getUserProfile({
-    desc: '用于显示用户昵称和头像',
-    success: function(res) {
+  var d = this.dpr
+  var btn = this.enterBtn
+
+  // 小游戏用createUserInfoButton获取用户信息
+  var authBtn = wx.createUserInfoButton({
+    type: 'text',
+    text: '',
+    style: {
+      left: btn.x,
+      top: btn.y,
+      width: btn.w,
+      height: btn.h,
+      backgroundColor: 'rgba(0,0,0,0)',
+      color: '#ffffff',
+      fontSize: 0,
+      borderRadius: 0
+    }
+  })
+
+  authBtn.onTap(function(res) {
+    authBtn.destroy()
+    if (res.userInfo) {
       var info = res.userInfo
       self.nickName = info.nickName || '玩家'
       self.authed = true
 
-      // 加载头像
       if (info.avatarUrl) {
         var img = wx.createImage()
         img.onload = function() {
@@ -630,9 +648,6 @@ GameMain.prototype.doAuth = function() {
         img.src = info.avatarUrl
       }
       self.paint()
-    },
-    fail: function() {
-      // 用户拒绝授权，不影响使用
     }
   })
 }
