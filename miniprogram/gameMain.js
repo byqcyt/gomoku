@@ -291,8 +291,8 @@ GameMain.prototype.paintWelcome = function() {
   ctx.font = 'bold ' + (18 * d) + 'px sans-serif'
   ctx.fillText(this.authed ? '进入游戏' : '开始游戏', (btn.x + btn.w / 2) * d, (btn.y + btn.h / 2) * d)
 
-  // 授权按钮（未授权且无原生按钮时显示）
-  if (!this.authed && !this.authBtn) {
+  // 授权按钮（未授权时显示）
+  if (!this.authed) {
     var ebtn = this.enterBtn
     ctx.fillStyle = '#27AE60'
     this.roundRect(ctx, ebtn.x * d, ebtn.y * d, ebtn.w * d, ebtn.h * d, 22 * d)
@@ -625,15 +625,15 @@ GameMain.prototype.setupAuthButton = function() {
   try {
     var btn = wx.createUserInfoButton({
       type: 'text',
-      text: '获取头像昵称',
+      text: ' ',
       style: {
         left: ebtn.x,
         top: ebtn.y,
         width: ebtn.w,
         height: ebtn.h,
         backgroundColor: '#27AE60',
-        color: '#ffffff',
-        fontSize: 14,
+        color: 'rgba(255,255,255,0)',
+        fontSize: 1,
         borderRadius: 22
       }
     })
