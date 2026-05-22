@@ -134,12 +134,12 @@ GameMain.prototype.stopTimer = function() {
 
 GameMain.prototype.animateStone = function(row, col, player) {
   var self = this
-  this.anim = { row: row, col: col, player: player, progress: 0 }
+  this.anim = { row: row, col: col, player: player, progress: 0.2 }
   var steps = 6
-  var step = 0
+  var step = 1
   var timer = setInterval(function() {
     step++
-    self.anim.progress = step / steps
+    self.anim.progress = Math.min(step / steps, 1)
     self.paint()
     if (step >= steps) {
       clearInterval(timer)
@@ -422,7 +422,7 @@ GameMain.prototype.paintBoard = function() {
 
       var stoneRad = rad
       if (this.anim && this.anim.row === r && this.anim.col === c) {
-        stoneRad = rad * this.anim.progress
+        stoneRad = Math.max(rad * this.anim.progress, 1)
       }
 
       ctx.beginPath()
