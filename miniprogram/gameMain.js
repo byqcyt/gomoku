@@ -228,34 +228,67 @@ GameMain.prototype.paintWelcome = function() {
   ctx.font = 'bold ' + (42 * d) + 'px sans-serif'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText('神奇的五子棋', w / 2, h * 0.3)
+  ctx.fillText('神奇的五子棋', w / 2, h * 0.2)
 
   // 副标题
   ctx.fillStyle = '#95A5A6'
   ctx.font = (16 * d) + 'px sans-serif'
-  ctx.fillText('经典策略对弈游戏', w / 2, h * 0.38)
+  ctx.fillText('经典策略对弈游戏', w / 2, h * 0.27)
 
-  // 开始游戏按钮
+  // 头像
+  var avatarR = 40 * d
+  var avatarY = h * 0.38
+  if (this.avatarImg) {
+    ctx.save()
+    ctx.beginPath()
+    ctx.arc(w / 2, avatarY, avatarR, 0, 6.3)
+    ctx.clip()
+    ctx.drawImage(this.avatarImg, w / 2 - avatarR, avatarY - avatarR, avatarR * 2, avatarR * 2)
+    ctx.restore()
+  } else {
+    ctx.fillStyle = '#7F8C8D'
+    ctx.beginPath()
+    ctx.arc(w / 2, avatarY, avatarR, 0, 6.3)
+    ctx.fill()
+    ctx.fillStyle = '#BDC3C7'
+    ctx.beginPath()
+    ctx.arc(w / 2, avatarY - 8 * d, 14 * d, 0, 6.3)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(w / 2, avatarY + 24 * d, 22 * d, 3.14, 0)
+    ctx.fill()
+  }
+
+  // 昵称
+  ctx.fillStyle = '#ECF0F1'
+  ctx.font = (18 * d) + 'px sans-serif'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(this.nickName, w / 2, h * 0.47)
+
+  // 开始/进入游戏按钮
   var btn = this.welcomeBtn
   ctx.fillStyle = '#E74C3C'
   this.roundRect(ctx, btn.x * d, btn.y * d, btn.w * d, btn.h * d, 8 * d)
   ctx.fill()
   ctx.fillStyle = '#FFF'
   ctx.font = 'bold ' + (18 * d) + 'px sans-serif'
-  ctx.fillText('开始游戏', (btn.x + btn.w / 2) * d, (btn.y + btn.h / 2) * d)
+  ctx.fillText(this.authed ? '进入游戏' : '开始游戏', (btn.x + btn.w / 2) * d, (btn.y + btn.h / 2) * d)
 
-  // 授权按钮
-  var ebtn = this.enterBtn
-  ctx.fillStyle = 'rgba(255,255,255,0.15)'
-  this.roundRect(ctx, ebtn.x * d, ebtn.y * d, ebtn.w * d, ebtn.h * d, 8 * d)
-  ctx.fill()
-  ctx.strokeStyle = 'rgba(255,255,255,0.4)'
-  ctx.lineWidth = d
-  this.roundRect(ctx, ebtn.x * d, ebtn.y * d, ebtn.w * d, ebtn.h * d, 8 * d)
-  ctx.stroke()
-  ctx.fillStyle = '#BDC3C7'
-  ctx.font = (14 * d) + 'px sans-serif'
-  ctx.fillText('微信授权获取头像昵称', (ebtn.x + ebtn.w / 2) * d, (ebtn.y + ebtn.h / 2) * d)
+  // 授权按钮（未授权时显示）
+  if (!this.authed) {
+    var ebtn = this.enterBtn
+    ctx.fillStyle = 'rgba(255,255,255,0.15)'
+    this.roundRect(ctx, ebtn.x * d, ebtn.y * d, ebtn.w * d, ebtn.h * d, 8 * d)
+    ctx.fill()
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)'
+    ctx.lineWidth = d
+    this.roundRect(ctx, ebtn.x * d, ebtn.y * d, ebtn.w * d, ebtn.h * d, 8 * d)
+    ctx.stroke()
+    ctx.fillStyle = '#BDC3C7'
+    ctx.font = (14 * d) + 'px sans-serif'
+    ctx.fillText('微信授权获取头像昵称', (ebtn.x + ebtn.w / 2) * d, (ebtn.y + ebtn.h / 2) * d)
+  }
 }
 
 GameMain.prototype.paintGame = function() {
