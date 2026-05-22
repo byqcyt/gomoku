@@ -321,6 +321,15 @@ GameMain.prototype.paintGame = function() {
   var s = this.stats
   ctx2.fillText('战绩 ' + s.total + '局 ' + s.win + '胜 ' + s.lose + '负', (this.w - 10) * d, 45 * d)
 
+  // 清空战绩按钮
+  var clearW = 30, clearH = 20
+  var clearX = this.w - 10 - clearW
+  var clearY = 54
+  this.clearBtn = { x: clearX, y: clearY, w: clearW, h: clearH }
+  ctx2.fillStyle = '#999'
+  ctx2.font = (11 * d) + 'px sans-serif'
+  ctx2.fillText('清空', (this.w - 10) * d, (clearY + clearH / 2) * d)
+
   // 游戏结束时显示分享按钮
   if (this.board.gameOver) {
     var sw = 80, sh = 30
@@ -577,6 +586,17 @@ GameMain.prototype.onGameTap = function(tx, ty) {
     var b = this.btns[i]
     if (tx >= b.x && tx < b.x + b.w && ty >= b.y && ty < b.y + b.h) {
       this.clickBtn(b)
+      return
+    }
+  }
+
+  // 清空战绩
+  if (this.clearBtn) {
+    var cb = this.clearBtn
+    if (tx >= cb.x && tx < cb.x + cb.w && ty >= cb.y && ty < cb.y + cb.h) {
+      this.stats = { total: 0, win: 0, lose: 0 }
+      this.saveStats()
+      this.paint()
       return
     }
   }
