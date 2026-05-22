@@ -20,7 +20,7 @@
       "outputPath": ""
     },
     "uglifyFileName": false,
-    "packNpmManually": false,
+    "packNpmManually": true,
     "packNpmRelationList": [],
     "minifyWXSS": true,
     "minifyWXML": true,
