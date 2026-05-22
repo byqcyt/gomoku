@@ -32,6 +32,7 @@ function GameMain(canvas, screenW, screenH, dpr) {
   this.authed = false
   this.guideDismissed = false
 
+  this.anim = null
   this.stats = { total: 0, win: 0, lose: 0 }
   this.loadStats()
   this.initAudio()
@@ -100,6 +101,22 @@ GameMain.prototype.playSound = function(type) {
       this.winSound.play()
     }
   } catch (e) {}
+}
+
+GameMain.prototype.animateStone = function(row, col, player) {
+  var self = this
+  this.anim = { row: row, col: col, player: player, progress: 0 }
+  var steps = 6
+  var step = 0
+  var timer = setInterval(function() {
+    step++
+    self.anim.progress = step / steps
+    self.paint()
+    if (step >= steps) {
+      clearInterval(timer)
+      self.anim = null
+    }
+  }, 16)
 }
 
 GameMain.prototype.initLayout = function() {
@@ -348,8 +365,14 @@ GameMain.prototype.paintBoard = function() {
       if (v === EMPTY) continue
       var cx = ox + pad + c * cell
       var cy = oy + pad + r * cell
+
+      var stoneRad = rad
+      if (this.anim && this.anim.row === r && this.anim.col === c) {
+        stoneRad = rad * this.anim.progress
+      }
+
       ctx.beginPath()
-      ctx.arc(cx, cy, rad, 0, 6.3)
+      ctx.arc(cx, cy, stoneRad, 0, 6.3)
       ctx.fillStyle = v === BLACK ? '#000' : '#FFF'
       ctx.fill()
       ctx.strokeStyle = '#555'
@@ -513,6 +536,7 @@ GameMain.prototype.onGameTap = function(tx, ty) {
       this.recordResult(this.board.winner)
     } else {
       this.playSound('place')
+      this.animateStone(row, col, this.board.getCell(row, col))
     }
     this.updateStatus()
     this.paint()
@@ -608,6 +632,7 @@ GameMain.prototype.doAI = function() {
         self.recordResult(self.board.winner)
       } else {
         self.playSound('place')
+        self.animateStone(mv.row, mv.col, self.board.getCell(mv.row, mv.col))
       }
       self.updateStatus()
     }
