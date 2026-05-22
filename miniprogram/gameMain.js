@@ -322,13 +322,17 @@ GameMain.prototype.paintGame = function() {
   ctx2.fillText('战绩 ' + s.total + '局 ' + s.win + '胜 ' + s.lose + '负', (this.w - 10) * d, 45 * d)
 
   // 清空战绩按钮
-  var clearW = 30, clearH = 20
+  var clearW = 40, clearH = 22
   var clearX = this.w - 10 - clearW
-  var clearY = 54
+  var clearY = 56
   this.clearBtn = { x: clearX, y: clearY, w: clearW, h: clearH }
-  ctx2.fillStyle = '#999'
+  ctx2.fillStyle = '#E74C3C'
+  this.roundRect(ctx2, clearX * d, clearY * d, clearW * d, clearH * d, 6 * d)
+  ctx2.fill()
+  ctx2.fillStyle = '#FFF'
   ctx2.font = (11 * d) + 'px sans-serif'
-  ctx2.fillText('清空', (this.w - 10) * d, (clearY + clearH / 2) * d)
+  ctx2.textAlign = 'center'
+  ctx2.fillText('清空', (clearX + clearW / 2) * d, (clearY + clearH / 2) * d)
 
   // 游戏结束时显示分享按钮
   if (this.board.gameOver) {
