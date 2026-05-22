@@ -33,6 +33,8 @@ function GameMain(canvas, screenW, screenH, dpr) {
   this.guideDismissed = false
 
   this.anim = null
+  this.timer = 30
+  this.timerId = null
   this.stats = { total: 0, win: 0, lose: 0 }
   this.loadStats()
   this.initAudio()
@@ -101,6 +103,31 @@ GameMain.prototype.playSound = function(type) {
       this.winSound.play()
     }
   } catch (e) {}
+}
+
+GameMain.prototype.startTimer = function() {
+  var self = this
+  self.stopTimer()
+  self.timer = 30
+  self.timerId = setInterval(function() {
+    self.timer--
+    if (self.timer <= 10) self.paint()
+    if (self.timer <= 0) {
+      self.stopTimer()
+      self.board.gameOver = true
+      self.board.winner = self.board.currentPlayer === BLACK ? WHITE : BLACK
+      self.status = '时间到！' + (self.board.winner === BLACK ? '黑子' : '白子') + '获胜！'
+      self.recordResult(self.board.winner)
+      self.paint()
+    }
+  }, 1000)
+}
+
+GameMain.prototype.stopTimer = function() {
+  if (this.timerId) {
+    clearInterval(this.timerId)
+    this.timerId = null
+  }
 }
 
 GameMain.prototype.animateStone = function(row, col, player) {
@@ -401,6 +428,15 @@ GameMain.prototype.paintStatus = function() {
   ctx.textBaseline = 'middle'
   var t = this.thinking ? this.status + ' (AI思考中...)' : this.status
   ctx.fillText(t, (this.w / 2) * d, this.statusY * d)
+
+  // 倒计时
+  if (!this.board.gameOver && !this.thinking) {
+    var color = this.timer <= 10 ? '#E74C3C' : '#999'
+    ctx.fillStyle = color
+    ctx.font = (12 * d) + 'px sans-serif'
+    ctx.textAlign = 'right'
+    ctx.fillText(this.timer + 's', (this.w - 10) * d, (this.statusY + 20) * d)
+  }
 }
 
 GameMain.prototype.paintBtns = function() {
@@ -507,6 +543,7 @@ GameMain.prototype.onGuideTap = function(tx, ty) {
     this.guideDismissed = true
     this.saveGuideState()
     this.page = 'playing'
+    this.startTimer()
     this.paint()
   }
 }
@@ -532,11 +569,13 @@ GameMain.prototype.onGameTap = function(tx, ty) {
 
   if (this.board.placeStone(row, col)) {
     if (this.board.gameOver) {
+      this.stopTimer()
       this.playSound('win')
       this.recordResult(this.board.winner)
     } else {
       this.playSound('place')
       this.animateStone(row, col, this.board.getCell(row, col))
+      this.startTimer()
     }
     this.updateStatus()
     this.paint()
@@ -579,6 +618,7 @@ GameMain.prototype.doAuth = function() {
 GameMain.prototype.enterGame = function() {
   if (this.guideDismissed) {
     this.page = 'playing'
+    this.startTimer()
   } else {
     this.page = 'guide'
   }
@@ -597,6 +637,7 @@ GameMain.prototype.clickBtn = function(b) {
     if (this.thinking) return
     if (this.mode !== GameMode.PVP) { this.board.undoLastMove(); this.board.undoLastMove() }
     else { this.board.undoLastMove() }
+    this.startTimer()
     this.updateStatus()
     this.paint()
   } else if (b.act === 'reset') {
@@ -613,6 +654,7 @@ GameMain.prototype.clickBtn = function(b) {
 GameMain.prototype.resetGame = function() {
   this.board.reset()
   this.thinking = false
+  this.startTimer()
   this.updateStatus()
   this.paint()
 }
@@ -620,6 +662,7 @@ GameMain.prototype.resetGame = function() {
 GameMain.prototype.doAI = function() {
   var self = this
   self.thinking = true
+  self.stopTimer()
   self.paint()
   var snap = self.board.getBoardCopy()
   var gai = new GomokuAI(self.mode.depth, self.mode.range, self.mode.maxCandidates, self.mode.randomPick)
@@ -628,11 +671,13 @@ GameMain.prototype.doAI = function() {
     if (mv && !self.board.gameOver) {
       self.board.placeStone(mv.row, mv.col)
       if (self.board.gameOver) {
+        self.stopTimer()
         self.playSound('win')
         self.recordResult(self.board.winner)
       } else {
         self.playSound('place')
         self.animateStone(mv.row, mv.col, self.board.getCell(mv.row, mv.col))
+        self.startTimer()
       }
       self.updateStatus()
     }
