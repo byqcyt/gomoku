@@ -332,20 +332,20 @@ GameMain.prototype.paintWelcome = function() {
     ctx.fillText('获取头像昵称', (ebtn.x + ebtn.w / 2) * d, (ebtn.y + ebtn.h / 2) * d)
   }
 
-  // 右上角更多按钮（已授权时显示）
+  // 重新授权按钮（已授权时显示）
   if (this.authed) {
-    var moreW = 36, moreH = 30
-    var moreX = this.w - 12 - moreW
-    var moreY = 30
-    this.moreBtn = { x: moreX, y: moreY, w: moreW, h: moreH }
-    ctx.fillStyle = 'rgba(255,255,255,0.2)'
-    this.roundRect(ctx, moreX * d, moreY * d, moreW * d, moreH * d, 6 * d)
+    var reW = 70, reH = 24
+    var reX = Math.floor((this.w - reW) / 2)
+    var reY = Math.floor(this.h * 0.52)
+    this.moreBtn = { x: reX, y: reY, w: reW, h: reH }
+    ctx.fillStyle = 'rgba(255,255,255,0.15)'
+    this.roundRect(ctx, reX * d, reY * d, reW * d, reH * d, 12 * d)
     ctx.fill()
-    ctx.fillStyle = '#FFF'
-    ctx.font = 'bold ' + (20 * d) + 'px sans-serif'
+    ctx.fillStyle = 'rgba(255,255,255,0.6)'
+    ctx.font = (12 * d) + 'px sans-serif'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText('···', (moreX + moreW / 2) * d, (moreY + moreH / 2) * d)
+    ctx.fillText('重新授权', (reX + reW / 2) * d, (reY + reH / 2) * d)
   }
 }
 
@@ -357,27 +357,28 @@ GameMain.prototype.paintGame = function() {
   this.paintStatus()
   this.paintBtns()
 
-  // 显示统计信息（与返回按钮同一行）
+  // 显示统计信息（状态文字下方居中）
   var ctx2 = this.ctx
   var d = this.dpr
-  ctx2.fillStyle = '#999'
-  ctx2.font = (11 * d) + 'px sans-serif'
-  ctx2.textAlign = 'right'
-  ctx2.textBaseline = 'middle'
   var s = this.stats
-  ctx2.fillText('战绩 ' + s.total + '局 ' + s.win + '胜 ' + s.lose + '负', (this.w - 10) * d, 45 * d)
+  var statsY = this.statusY + 50
+  ctx2.fillStyle = '#999'
+  ctx2.font = (12 * d) + 'px sans-serif'
+  ctx2.textAlign = 'center'
+  ctx2.textBaseline = 'middle'
+  ctx2.fillText('战绩 ' + s.total + '局 ' + s.win + '胜 ' + s.lose + '负', (this.w / 2) * d, statsY * d)
 
-  // 清空战绩按钮
+  // 清空战绩按钮（战绩右边）
   var clearW = 40, clearH = 22
-  var clearX = this.w - 10 - clearW
-  var clearY = 56
+  var statsTextW = 160
+  var clearX = Math.floor(this.w / 2 + statsTextW / 2 + 6)
+  var clearY = statsY - clearH / 2
   this.clearBtn = { x: clearX, y: clearY, w: clearW, h: clearH }
   ctx2.fillStyle = '#E74C3C'
   this.roundRect(ctx2, clearX * d, clearY * d, clearW * d, clearH * d, 6 * d)
   ctx2.fill()
   ctx2.fillStyle = '#FFF'
   ctx2.font = (11 * d) + 'px sans-serif'
-  ctx2.textAlign = 'center'
   ctx2.fillText('清空', (clearX + clearW / 2) * d, (clearY + clearH / 2) * d)
 
   // 游戏结束时显示分享按钮
