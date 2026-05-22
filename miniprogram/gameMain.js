@@ -754,7 +754,12 @@ GameMain.prototype.clearAuth = function() {
   this._avatarUrl = ''
   this.authed = false
   try { wx.removeStorageSync('user_info') } catch (e) {}
-  if (this.authBtn) { this.authBtn.show() }
+  // 销毁旧按钮，重新创建以弹出新的授权弹窗
+  if (this.authBtn) {
+    this.authBtn.destroy()
+    this.authBtn = null
+  }
+  this.setupAuthButton()
   this.paint()
 }
 
