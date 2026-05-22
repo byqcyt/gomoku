@@ -32,6 +32,7 @@ function GameMain(canvas, screenW, screenH, dpr) {
   this.authed = false
   this.guideDismissed = false
 
+  this.initAudio()
   this.loadGuideState()
 }
 
@@ -52,6 +53,30 @@ GameMain.prototype.loadGuideState = function() {
 GameMain.prototype.saveGuideState = function() {
   try {
     wx.setStorageSync('guide_dismissed', true)
+  } catch (e) {}
+}
+
+GameMain.prototype.initAudio = function() {
+  try {
+    this.placeSound = wx.createInnerAudioContext()
+    this.placeSound.src = 'audio/place.wav'
+    this.winSound = wx.createInnerAudioContext()
+    this.winSound.src = 'audio/win.wav'
+  } catch (e) {
+    this.placeSound = null
+    this.winSound = null
+  }
+}
+
+GameMain.prototype.playSound = function(type) {
+  try {
+    if (type === 'place' && this.placeSound) {
+      this.placeSound.stop()
+      this.placeSound.play()
+    } else if (type === 'win' && this.winSound) {
+      this.winSound.stop()
+      this.winSound.play()
+    }
   } catch (e) {}
 }
 
@@ -462,6 +487,11 @@ GameMain.prototype.onGameTap = function(tx, ty) {
   if (col < 0 || col >= SIZE || row < 0 || row >= SIZE) return
 
   if (this.board.placeStone(row, col)) {
+    if (this.board.gameOver) {
+      this.playSound('win')
+    } else {
+      this.playSound('place')
+    }
     this.updateStatus()
     this.paint()
     if (!this.board.gameOver && this.mode !== GameMode.PVP) {
@@ -551,6 +581,11 @@ GameMain.prototype.doAI = function() {
     var mv = gai.findBestMove(snap)
     if (mv && !self.board.gameOver) {
       self.board.placeStone(mv.row, mv.col)
+      if (self.board.gameOver) {
+        self.playSound('win')
+      } else {
+        self.playSound('place')
+      }
       self.updateStatus()
     }
     self.thinking = false
