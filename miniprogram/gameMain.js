@@ -291,8 +291,8 @@ GameMain.prototype.paintWelcome = function() {
   ctx.font = 'bold ' + (18 * d) + 'px sans-serif'
   ctx.fillText(this.authed ? '进入游戏' : '开始游戏', (btn.x + btn.w / 2) * d, (btn.y + btn.h / 2) * d)
 
-  // 授权按钮（未授权时显示）
-  if (!this.authed) {
+  // 授权按钮（未授权且无原生按钮时显示）
+  if (!this.authed && !this.authBtn) {
     var ebtn = this.enterBtn
     ctx.fillStyle = '#27AE60'
     this.roundRect(ctx, ebtn.x * d, ebtn.y * d, ebtn.w * d, ebtn.h * d, 22 * d)
@@ -549,6 +549,14 @@ GameMain.prototype.onWelcomeTap = function(tx, ty) {
   if (tx >= btn.x && tx < btn.x + btn.w && ty >= btn.y && ty < btn.y + btn.h) {
     this.enterGame()
     return
+  }
+
+  // 兜底：原生按钮不存在时，点击画布按钮直接进入游戏
+  if (!this.authBtn && !this.authed) {
+    var ebtn = this.enterBtn
+    if (tx >= ebtn.x && tx < ebtn.x + ebtn.w && ty >= ebtn.y && ty < ebtn.y + ebtn.h) {
+      this.enterGame()
+    }
   }
 }
 
