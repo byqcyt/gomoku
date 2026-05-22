@@ -311,15 +311,15 @@ GameMain.prototype.paintGame = function() {
   this.paintStatus()
   this.paintBtns()
 
-  // 显示统计信息（右上角）
+  // 显示统计信息（与返回按钮同一行）
   var ctx2 = this.ctx
   var d = this.dpr
   ctx2.fillStyle = '#999'
   ctx2.font = (11 * d) + 'px sans-serif'
   ctx2.textAlign = 'right'
-  ctx2.textBaseline = 'top'
+  ctx2.textBaseline = 'middle'
   var s = this.stats
-  ctx2.fillText('战绩 ' + s.total + '局 ' + s.win + '胜 ' + s.lose + '负', (this.w - 10) * d, 8 * d)
+  ctx2.fillText('战绩 ' + s.total + '局 ' + s.win + '胜 ' + s.lose + '负', (this.w - 10) * d, 45 * d)
 
   // 游戏结束时显示分享按钮
   if (this.board.gameOver) {
