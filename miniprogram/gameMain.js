@@ -267,6 +267,11 @@ GameMain.prototype.paintWelcome = function() {
   ctx.font = (16 * d) + 'px sans-serif'
   ctx.fillText('经典策略对弈游戏', w / 2, h * 0.27)
 
+  // 欢迎语
+  ctx.fillStyle = '#E67E22'
+  ctx.font = (14 * d) + 'px sans-serif'
+  ctx.fillText('欢迎小妮一起玩游戏', w / 2, h * 0.33)
+
   // 头像
   var avatarR = 40 * d
   var avatarY = h * 0.38
