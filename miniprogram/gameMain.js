@@ -9,9 +9,9 @@ var GomokuAI = ai.GomokuAI
 var gm = require('./game/GameMode.js')
 var GameMode = gm.GameMode
 
-var CELL = 22
 var PAD = 15
-var BOARD = PAD * 2 + CELL * (SIZE - 1)
+var CELL = 0
+var BOARD = 0
 
 function GameMain(canvas, screenW, screenH, dpr) {
   this.canvas = canvas
@@ -19,6 +19,11 @@ function GameMain(canvas, screenW, screenH, dpr) {
   this.w = screenW
   this.h = screenH
   this.dpr = dpr
+  // 根据屏幕宽度动态计算格子大小
+  CELL = Math.floor((screenW - PAD * 2 - 10) / (SIZE - 1))
+  if (CELL > 30) CELL = 30
+  if (CELL < 18) CELL = 18
+  BOARD = PAD * 2 + CELL * (SIZE - 1)
   this.board = new GameBoard()
   this.mode = GameMode.PVE_MEDIUM
   this.modeIdx = 2
